@@ -11,7 +11,7 @@ function readIOSBundleIdFromPlist() {
   }
 }
 
-export default ({ config }) => ({
+export default ({ config }: { config?: any }) => ({
   expo: {
     name: process.env.EXPO_PUBLIC_APP_NAME ?? "EMU Alerts",
     slug: process.env.EXPO_PUBLIC_APP_SLUG ?? "emualerts",
@@ -22,16 +22,15 @@ export default ({ config }) => ({
     userInterfaceStyle: "light",
     plugins: [
       ["expo-notifications"]
-      // TODO: Add react-native-maps plugin once compatibility is resolved for SDK 54
-      // [
-      //   "react-native-maps", 
-      //   { config: { googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY } }
-      // ]
+      // Note: react-native-maps plugin not supported in SDK 52, using runtime configuration instead
     ],
     ios: {
       bundleIdentifier: readIOSBundleIdFromPlist(),
       supportsTablet: true,
-      googleServicesFile: "./credentials/GoogleService-Info.plist"
+      googleServicesFile: "./credentials/GoogleService-Info.plist",
+      config: {
+        googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+      }
     },
     android: {
       package: "com.emualerts",
@@ -39,7 +38,12 @@ export default ({ config }) => ({
       permissions: [
         "WAKE_LOCK","VIBRATE","POST_NOTIFICATIONS",
         "ACCESS_FINE_LOCATION","ACCESS_COARSE_LOCATION"
-      ]
+      ],
+      config: {
+        googleMaps: {
+          apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+        }
+      }
     },
     web: { bundler: "metro", favicon: "./assets/images/favicon.png" },
     notification: { iosDisplayInForeground: true },

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { router } from 'expo-router';
 import { db } from '../../firebase.config';
 
 interface Incident {
@@ -41,17 +42,27 @@ export default function IncidentsScreen() {
       const testIncident = {
         title: `Test Incident ${new Date().getTime()}`,
         description: 'This is a test incident created for verification',
+        alertType: 'Emergency Response',
+        address: '123 Campus Drive, Ypsilanti, MI',
+        city: 'Ypsilanti',
+        county: 'Washtenaw',
+        state: 'MI',
+        priority: 'high',
+        coordinates: {
+          latitude: 42.241,
+          longitude: -83.613
+        },
         timestamp: new Date(),
-        location: 'Test Location',
-        severity: 'Low',
+        location: 'EMU Campus',
+        severity: 'High',
         type: 'Test'
       };
 
       await addDoc(collection(db, 'incidents'), testIncident);
-      Alert.alert('Success', 'Test incident created successfully!');
+      Alert.alert('Success', 'Test incident with coordinates created successfully!');
     } catch (error) {
       console.error('Error creating test incident:', error);
-      Alert.alert('Error', `Failed to create test incident: ${error.message}`);
+      Alert.alert('Error', `Failed to create test incident: ${(error as Error).message}`);
     }
   };
 
@@ -74,7 +85,11 @@ export default function IncidentsScreen() {
             <Text style={styles.noIncidentsText}>No incidents found</Text>
           ) : (
             incidents.map((incident) => (
-              <View key={incident.id} style={styles.incidentCard}>
+              <TouchableOpacity 
+                key={incident.id} 
+                style={styles.incidentCard}
+                onPress={() => router.push(`/incident/${incident.id}` as any)}
+              >
                 <Text style={styles.incidentTitle}>{incident.title}</Text>
                 <Text style={styles.incidentDescription}>{incident.description}</Text>
                 <Text style={styles.incidentMeta}>
@@ -83,7 +98,7 @@ export default function IncidentsScreen() {
                 <Text style={styles.incidentTimestamp}>
                   {incident.timestamp?.toDate?.()?.toLocaleString() || 'No timestamp'}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </ScrollView>

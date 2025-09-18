@@ -21,7 +21,7 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Login Failed', error.message);
+      Alert.alert('Login Failed', (error as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +39,7 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Sign up error:', error);
-      Alert.alert('Sign Up Failed', error.message);
+      Alert.alert('Sign Up Failed', (error as Error).message);
     } finally {
       setIsLoading(false);
     }

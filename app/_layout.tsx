@@ -27,6 +27,7 @@ export default function Root() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="incident/[id]" options={{ title: 'Incident Details' }} />
+        <Stack.Screen name="chat/[id]" options={{ title: 'Incident Chat' }} />
       </Stack>
       <ToastHost />
     </View>

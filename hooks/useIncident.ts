@@ -15,6 +15,10 @@ interface Incident {
     latitude: number;
     longitude: number;
   };
+  contact?: {
+    name: string;
+    phone: string;
+  };
   timestamp: any;
   message?: string;
 }

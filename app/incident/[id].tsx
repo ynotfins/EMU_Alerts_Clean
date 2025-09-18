@@ -1,15 +1,20 @@
-import { useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Platform, ActionSheetIOS, Alert, Image } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { ScrollView, Text, View, Pressable, Platform, ActionSheetIOS, Alert, Image, TextInput } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { useIncident } from '../../hooks/useIncident';
 import { useAuth } from '../../hooks/useAuth';
 import { openDirections } from '../../utils/navigation';
 import { logResponse, updateIncidentStatus } from '../../utils/response';
-import { uploadIncidentMedia } from '../../services/storage';
+import { uploadIncidentMedia, uploadIncidentDoc } from '../../services/storage';
 import { RoleGate } from '../../components/RoleGate';
-import { useState } from 'react';
+import { usePresence } from '../../hooks/usePresence';
+import { colors, radii, shadowCard, spacing } from '../../ui/theme';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from '../../firebase.config';
+import { useState, useEffect } from 'react';
 
 export default function IncidentDetail(){
   const { id, source } = useLocalSearchParams<{id:string; source?:'alerts'|'incidents'}>();
@@ -17,6 +22,58 @@ export default function IncidentDetail(){
   const { user } = useAuth();
   const [responding, setResponding] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  
+  // Track location when responding
+  usePresence(responding);
+
+  // Initialize contact info when incident loads
+  useEffect(() => {
+    if (incident?.contact) {
+      setContactName(incident.contact.name || '');
+      setContactPhone(incident.contact.phone || '');
+    }
+  }, [incident]);
+
+  const saveContact = async () => {
+    if (!user?.uid || !incident) return;
+    try {
+      await updateDoc(doc(db, (incident.source || 'incidents') as 'incidents'|'alerts', incident.id), {
+        contact: { name: contactName.trim(), phone: contactPhone.trim() }
+      });
+      Alert.alert('Success', 'Contact information saved!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save contact: ' + (error as Error).message);
+    }
+  };
+
+  const uploadDocument = async () => {
+    if (!incident) return;
+    try {
+      const pick = await DocumentPicker.getDocumentAsync({ type: ['application/pdf'] });
+      if (pick.canceled || !pick.assets?.length) return;
+      
+      setUploadingDoc(true);
+      const { url, name } = await uploadIncidentDoc(
+        incident.id, 
+        (incident.source || 'incidents') as 'incidents'|'alerts', 
+        pick.assets[0].uri, 
+        pick.assets[0].name || 'document.pdf'
+      );
+      
+      await updateDoc(doc(db, (incident.source || 'incidents') as 'incidents'|'alerts', incident.id), { 
+        docs: arrayUnion({ url, name }) 
+      });
+      
+      Alert.alert('Success', 'Document uploaded!');
+    } catch (error) {
+      Alert.alert('Error', 'Upload failed: ' + (error as Error).message);
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
 
   if (loading) {
     return <View style={{flex:1,alignItems:'center',justifyContent:'center'}}><Text>Loading…</Text></View>;
@@ -27,14 +84,14 @@ export default function IncidentDetail(){
 
   const coords = incident.coordinates;
   const priorityColor =
-    incident.priority === 'critical' ? '#FF3B30' :
-    incident.priority === 'high'     ? '#FF9500' :
-    incident.priority === 'medium'   ? '#FFCC00' : '#34C759';
+    incident.priority === 'critical' ? colors.danger :
+    incident.priority === 'high'     ? colors.warn :
+    incident.priority === 'medium'   ? '#FFCC00' : colors.success;
 
   return (
-    <ScrollView style={{ flex:1, backgroundColor:'#fff' }}>
+    <ScrollView style={{ flex:1, backgroundColor:colors.card }}>
       {/* Map section (top third) */}
-      <View style={{ height: 260, backgroundColor:'#E5E5EA' }}>
+      <View style={{ height: 260, backgroundColor:colors.border }}>
         {coords ? (
           <View style={{ flex:1 }}>
             <MapView
@@ -58,8 +115,8 @@ export default function IncidentDetail(){
 
             {/* Priority Badge (top-left overlay) */}
             <View style={{
-              position:'absolute', top:12, left:12,
-              backgroundColor: priorityColor, borderRadius:8, paddingHorizontal:8, paddingVertical:4,
+              position:'absolute', top:spacing.md, left:spacing.md,
+              backgroundColor: priorityColor, borderRadius:radii.badge, paddingHorizontal:spacing.sm, paddingVertical:spacing.xs,
               shadowColor:'#000', shadowOffset:{width:0,height:1}, shadowOpacity:0.2, shadowRadius:3, elevation:3
             }}>
               <Text style={{ color:'#fff', fontWeight:'700', fontSize:10 }}>
@@ -101,14 +158,14 @@ export default function IncidentDetail(){
                   }
                 }}
                 style={({pressed})=>({
-                  position:'absolute', top:12, right:12,
-                  backgroundColor: pressed ? '#2E7D32' : '#34C759',
+                  position:'absolute', top:spacing.md, right:spacing.md,
+                  backgroundColor: pressed ? '#2E7D32' : colors.success,
                   flexDirection:'row', alignItems:'center',
-                  paddingHorizontal:12, paddingVertical:8, borderRadius:12,
+                  paddingHorizontal:spacing.md, paddingVertical:spacing.sm, borderRadius:radii.button,
                   shadowColor:'#000', shadowOffset:{width:0,height:2}, shadowOpacity:0.2, shadowRadius:4, elevation:4
                 })}
               >
-                <Ionicons name="car" size={16} color="#fff" style={{ marginRight:6 }} />
+                <Ionicons name="car" size={16} color="#fff" style={{ marginRight:spacing.xs }} />
                 <Text style={{ color:'#fff', fontWeight:'700' }}>
                   {responding ? 'RESPONDING…' : (Platform.OS === 'web' ? 'OPEN MAPS' : 'RESPOND')}
                 </Text>
@@ -117,21 +174,92 @@ export default function IncidentDetail(){
           </View>
         ) : (
           <View style={{ flex:1, alignItems:'center', justifyContent:'center' }}>
-            <Ionicons name="location-outline" size={40} color="#8E8E93" />
-            <Text style={{ color:'#8E8E93', marginTop:6 }}>Location pending</Text>
+            <Ionicons name="location-outline" size={40} color={colors.textTertiary} />
+            <Text style={{ color:colors.textTertiary, marginTop:spacing.xs }}>Location pending</Text>
           </View>
         )}
       </View>
 
       {/* Incident summary */}
-      <View style={{ padding:16 }}>
-        <Text style={{ fontSize:20, fontWeight:'700' }}>{incident.alertType}</Text>
-        <Text style={{ color:'#3A3A3C', marginTop:4 }}>{incident.state} | {incident.county} | {incident.city}</Text>
-        <Text style={{ fontWeight:'700', marginTop:8 }}>{incident.address}</Text>
+      <View style={{ padding:spacing.lg }}>
+        <Text style={{ fontSize:20, fontWeight:'700', color:colors.text }}>{incident.alertType}</Text>
+        <Text style={{ color:colors.textSecondary, marginTop:spacing.xs }}>{incident.state} | {incident.county} | {incident.city}</Text>
+        <Text style={{ fontWeight:'700', marginTop:spacing.sm, color:colors.text }}>{incident.address}</Text>
       </View>
 
+      {/* Supervisor Contact Management */}
+      <RoleGate allow={['supervisor']}>
+        <View style={{ paddingHorizontal:spacing.lg, marginBottom:spacing.md }}>
+          <Text style={{ fontSize:16, fontWeight:'700', marginBottom:spacing.sm, color:colors.text }}>Contact Information</Text>
+          
+          <View style={{ flexDirection:'row', gap:spacing.sm, marginBottom:spacing.sm }}>
+            <TextInput
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: radii.button,
+                padding: spacing.md,
+                backgroundColor: colors.card
+              }}
+              placeholder="Contact Name"
+              value={contactName}
+              onChangeText={setContactName}
+            />
+            <TextInput
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: radii.button,
+                padding: spacing.md,
+                backgroundColor: colors.card
+              }}
+              placeholder="Phone Number"
+              value={contactPhone}
+              onChangeText={setContactPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
+          
+          <View style={{ flexDirection:'row', gap:spacing.sm }}>
+            <Pressable
+              onPress={saveContact}
+              style={({pressed})=>({
+                backgroundColor: pressed ? '#1976D2' : colors.primary,
+                borderRadius: radii.button,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
+                flex: 1,
+                alignItems: 'center'
+              })}
+            >
+              <Text style={{ color:'#fff', fontWeight:'700' }}>Save Contact</Text>
+            </Pressable>
+            
+            <Pressable
+              onPress={uploadDocument}
+              style={({pressed})=>({
+                backgroundColor: pressed ? '#eee' : colors.card,
+                borderWidth:1, 
+                borderColor:colors.border, 
+                borderRadius: radii.button,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
+                flex: 1,
+                alignItems: 'center'
+              })}
+            >
+              <Text style={{ fontWeight:'600', color:colors.text }}>
+                {uploadingDoc ? 'Uploading...' : 'Upload PDF'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </RoleGate>
+
       {/* Media Actions */}
-      <View style={{ paddingHorizontal:16, marginBottom:8, flexDirection:'row', gap:12 }}>
+      <View style={{ paddingHorizontal:spacing.lg, marginBottom:spacing.sm, flexDirection:'row', gap:spacing.md }}>
         <RoleGate allow={['employee','supervisor']}>
           <Pressable
             onPress={async ()=>{
@@ -154,38 +282,48 @@ export default function IncidentDetail(){
               }
             }}
             style={({pressed})=>({
-              backgroundColor: pressed ? '#eee' : '#fff',
-              borderWidth:1, borderColor:'#E5E5EA', paddingHorizontal:12, paddingVertical:10, borderRadius:12
+              backgroundColor: pressed ? '#eee' : colors.card,
+              borderWidth:1, borderColor:colors.border, paddingHorizontal:spacing.md, paddingVertical:spacing.sm, borderRadius:radii.button
             })}
           >
-            <Text style={{ fontWeight:'600' }}>{uploading ? 'Uploading…' : 'Add Photo'}</Text>
+            <Text style={{ fontWeight:'600', color:colors.text }}>{uploading ? 'Uploading…' : 'Add Photo'}</Text>
           </Pressable>
         </RoleGate>
+
+        <Pressable
+          onPress={()=>router.push(`/chat/${incident.id}` as any)}
+          style={({pressed})=>({
+            backgroundColor: pressed ? '#eee' : colors.card,
+            borderWidth:1, borderColor:colors.border, paddingHorizontal:spacing.md, paddingVertical:spacing.sm, borderRadius:radii.button
+          })}
+        >
+          <Text style={{ fontWeight:'600', color:colors.text }}>💬 Chat</Text>
+        </Pressable>
       </View>
 
       {/* Timeline */}
-      <View style={{ paddingHorizontal:16, paddingBottom:24 }}>
-        <Text style={{ fontSize:16, fontWeight:'700', marginBottom:8 }}>Timeline & Updates</Text>
+      <View style={{ paddingHorizontal:spacing.lg, paddingBottom:spacing.xl }}>
+        <Text style={{ fontSize:16, fontWeight:'700', marginBottom:spacing.sm, color:colors.text }}>Timeline & Updates</Text>
         
         {/* Media Gallery */}
         {(incident as any)?.media?.length ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom:10 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom:spacing.sm }}>
             {(incident as any).media.map((m:any, idx:number)=>(
-              <Image key={idx} source={{ uri: m.url }} style={{ width:120, height:90, borderRadius:10, marginRight:8, backgroundColor:'#eee' }}/>
+              <Image key={idx} source={{ uri: m.url }} style={{ width:120, height:90, borderRadius:radii.badge, marginRight:spacing.sm, backgroundColor:colors.border }}/>
             ))}
           </ScrollView>
         ) : null}
         
         {updates.map((u: any) => (
-          <View key={`${u.source}:${u.id}`} style={{ paddingVertical:10, borderBottomWidth:1, borderBottomColor:'#eee' }}>
-            <View style={{ flexDirection:'row', alignItems:'center', marginBottom:4 }}>
-              <View style={{ width:8, height:8, borderRadius:4, backgroundColor:'#007AFF', marginRight:8 }} />
-              <Text style={{ fontWeight:'600' }}>{u.alertType}</Text>
+          <View key={`${u.source}:${u.id}`} style={{ paddingVertical:spacing.sm, borderBottomWidth:1, borderBottomColor:colors.border }}>
+            <View style={{ flexDirection:'row', alignItems:'center', marginBottom:spacing.xs }}>
+              <View style={{ width:8, height:8, borderRadius:4, backgroundColor:colors.info, marginRight:spacing.sm }} />
+              <Text style={{ fontWeight:'600', color:colors.text }}>{u.alertType}</Text>
             </View>
-            <Text numberOfLines={4} style={{ color:'#3A3A3C' }}>{u.message}</Text>
+            <Text numberOfLines={4} style={{ color:colors.textSecondary }}>{u.message}</Text>
           </View>
         ))}
-        {updates.length === 0 && <Text style={{ color:'#8E8E93' }}>No updates yet.</Text>}
+        {updates.length === 0 && <Text style={{ color:colors.textTertiary }}>No updates yet.</Text>}
       </View>
     </ScrollView>
   );

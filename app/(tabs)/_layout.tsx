@@ -31,6 +31,20 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <span>👤</span>,
         }}
       />
+      <Tabs.Screen
+        name="supervise"
+        options={{
+          title: 'Supervise',
+          tabBarIcon: ({ color }) => <span>🗺️</span>,
+        }}
+      />
+      <Tabs.Screen
+        name="documents"
+        options={{
+          title: 'Documents',
+          tabBarIcon: ({ color }) => <span>📄</span>,
+        }}
+      />
     </Tabs>
   );
 }

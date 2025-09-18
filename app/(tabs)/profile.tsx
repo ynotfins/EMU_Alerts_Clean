@@ -1,15 +1,19 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { router } from 'expo-router';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase.config';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
+import { colors, radii, spacing } from '../../ui/theme';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { profile } = useUserProfile();
+  const [cashApp, setCashApp] = useState(profile?.cashApp || '');
+  const [venmo, setVenmo] = useState(profile?.venmo || '');
 
   const writeTestIncident = async () => {
     try {
@@ -50,6 +54,39 @@ export default function ProfileScreen() {
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to get push token: ' + (error as Error).message);
+    }
+  };
+
+  const savePaymentHandles = async () => {
+    if (!user?.uid) return;
+    try {
+      const cleanCashApp = cashApp.trim().startsWith('$') ? cashApp.trim() : '';
+      const cleanVenmo = venmo.trim().startsWith('@') ? venmo.trim() : '';
+      
+      await updateDoc(doc(db, 'users', user.uid), {
+        cashApp: cleanCashApp,
+        venmo: cleanVenmo,
+        payoutsActive: !!(cleanCashApp || cleanVenmo)
+      });
+      
+      Alert.alert('Success', 'Payment handles saved!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save payment handles: ' + (error as Error).message);
+    }
+  };
+
+  const testCashApp = () => {
+    if (cashApp.trim()) {
+      Linking.openURL(`https://cash.app/${cashApp.trim()}`);
+    }
+  };
+
+  const testVenmo = () => {
+    if (venmo.trim()) {
+      const handle = venmo.trim().replace('@', '');
+      Linking.openURL(`venmo://users/${handle}`).catch(() => {
+        Linking.openURL(`https://venmo.com/${venmo.trim()}`);
+      });
     }
   };
 
@@ -99,6 +136,88 @@ export default function ProfileScreen() {
           )}
         </View>
       )}
+
+      {/* Payment Handles Section */}
+      <View style={[styles.userInfo, { marginBottom: spacing.lg }]}>
+        <Text style={[styles.testTitle, { color: colors.text }]}>Payment Information</Text>
+        
+        <View style={{ marginBottom: spacing.md }}>
+          <Text style={styles.userEmail}>Cash App Handle:</Text>
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radii.button,
+              padding: spacing.md,
+              marginTop: spacing.xs,
+              backgroundColor: colors.card
+            }}
+            placeholder="$username"
+            value={cashApp}
+            onChangeText={setCashApp}
+          />
+        </View>
+
+        <View style={{ marginBottom: spacing.md }}>
+          <Text style={styles.userEmail}>Venmo Handle:</Text>
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radii.button,
+              padding: spacing.md,
+              marginTop: spacing.xs,
+              backgroundColor: colors.card
+            }}
+            placeholder="@username"
+            value={venmo}
+            onChangeText={setVenmo}
+          />
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          <TouchableOpacity 
+            style={[styles.logoutButton, { backgroundColor: colors.primary, flex: 1 }]} 
+            onPress={savePaymentHandles}
+          >
+            <Text style={styles.logoutButtonText}>Save Payment Info</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Test Payment Buttons */}
+        {__DEV__ && (
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
+            {cashApp.trim() && (
+              <TouchableOpacity 
+                style={[styles.logoutButton, { backgroundColor: '#00D632', flex: 1 }]} 
+                onPress={testCashApp}
+              >
+                <Text style={styles.logoutButtonText}>Test Cash App</Text>
+              </TouchableOpacity>
+            )}
+            {venmo.trim() && (
+              <TouchableOpacity 
+                style={[styles.logoutButton, { backgroundColor: '#3396CD', flex: 1 }]} 
+                onPress={testVenmo}
+              >
+                <Text style={styles.logoutButtonText}>Test Venmo</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        <View style={{
+          backgroundColor: profile?.payoutsActive ? colors.success : colors.warn,
+          padding: spacing.sm,
+          borderRadius: radii.badge,
+          marginTop: spacing.md,
+          alignItems: 'center'
+        }}>
+          <Text style={{ color: '#fff', fontWeight: '600' }}>
+            Payment Status: {profile?.payoutsActive ? 'Active' : 'Not Set'}
+          </Text>
+        </View>
+      </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Sign Out</Text>

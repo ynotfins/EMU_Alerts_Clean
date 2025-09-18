@@ -34,5 +34,24 @@ service cloud.firestore {
       allow create: if isAuthed() && (userRole() in ["employee","supervisor"]);
       allow update, delete: if false; // immutable logs
     }
+
+    // Chat messages: all authenticated users can read, employee/supervisor can create
+    match /chats/{incidentId}/messages/{messageId} {
+      allow read: if isAuthed();
+      allow create: if isAuthed() && (userRole() in ["employee","supervisor"]);
+      allow update, delete: if false; // immutable messages
+    }
+
+    // Presence: users can write their own, supervisors can read all
+    match /users/{uid}/presence/{doc} {
+      allow read: if isAuthed() && (request.auth.uid == uid || userRole() == "supervisor");
+      allow write: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // Library documents: all can read, supervisors can manage
+    match /libraryDocs/{docId} {
+      allow read: if isAuthed();
+      allow write: if isAuthed() && userRole() == "supervisor";
+    }
   }
 }

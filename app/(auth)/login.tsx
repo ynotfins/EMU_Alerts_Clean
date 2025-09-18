@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, Activ
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { showMessage } from 'react-native-flash-message';
 import { useAuth } from '../../hooks/useAuth';
+import { colors, radii, spacing } from '../../ui/theme';
 
 export default function Login(){
   const { signIn } = useAuth();
@@ -37,26 +38,26 @@ export default function Login(){
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex:1, backgroundColor:'#F8F9FA' }} behavior={Platform.OS==='ios' ? 'padding' : undefined}>
-      <View style={{ flex:1, padding:20, justifyContent:'center' }}>
+    <KeyboardAvoidingView style={{ flex:1, backgroundColor:colors.bg }} behavior={Platform.OS==='ios' ? 'padding' : undefined}>
+      <View style={{ flex:1, padding:spacing.xl, justifyContent:'center' }}>
         {/* Header */}
-        <View style={{ alignItems:'center', marginBottom:24 }}>
-          <View style={{ width:80, height:80, borderRadius:40, backgroundColor:'#fff', alignItems:'center', justifyContent:'center', shadowColor:'#000', shadowOpacity:0.1, shadowRadius:8, elevation:3 }}>
-            <Ionicons name="flame" size={40} color="#FF3B30" />
+        <View style={{ alignItems:'center', marginBottom:spacing.xl }}>
+          <View style={{ width:80, height:80, borderRadius:40, backgroundColor:colors.card, alignItems:'center', justifyContent:'center', shadowColor:'#000', shadowOpacity:0.1, shadowRadius:8, elevation:3 }}>
+            <Ionicons name="flame" size={40} color={colors.danger} />
           </View>
-          <Text style={{ fontSize:32, fontWeight:'700', marginTop:12 }}>EMU Alerts</Text>
-          <Text style={{ color:'#8E8E93' }}>Fire Incident Management System</Text>
+          <Text style={{ fontSize:32, fontWeight:'700', marginTop:spacing.md, color:colors.text }}>EMU Alerts</Text>
+          <Text style={{ color:colors.textTertiary }}>Fire Incident Management System</Text>
         </View>
 
         {/* Form */}
-        <View style={{ backgroundColor:'#fff', borderRadius:16, padding:16, shadowColor:'#000', shadowOpacity:0.06, shadowRadius:10, elevation:2 }}>
+        <View style={{ backgroundColor:colors.card, borderRadius:radii.card, padding:spacing.lg, shadowColor:'#000', shadowOpacity:0.06, shadowRadius:10, elevation:2 }}>
           {/* Email */}
-          <View style={{ flexDirection:'row', alignItems:'center', borderColor:'#E5E5EA', borderWidth:1, borderRadius:12, paddingHorizontal:12, marginBottom:12 }}>
-            <Ionicons name="mail" size={18} color="#8E8E93" style={{ marginRight:8 }} />
+          <View style={{ flexDirection:'row', alignItems:'center', borderColor:colors.border, borderWidth:1, borderRadius:radii.button, paddingHorizontal:spacing.md, marginBottom:spacing.md }}>
+            <Ionicons name="mail" size={18} color={colors.textTertiary} style={{ marginRight:spacing.sm }} />
             <TextInput
               style={{ flex:1, height:44 }}
               placeholder="Email"
-              placeholderTextColor="#8E8E93"
+              placeholderTextColor={colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -67,25 +68,25 @@ export default function Login(){
           </View>
 
           {/* Password */}
-          <View style={{ flexDirection:'row', alignItems:'center', borderColor:'#E5E5EA', borderWidth:1, borderRadius:12, paddingHorizontal:12 }}>
-            <Ionicons name="lock-closed" size={18} color="#8E8E93" style={{ marginRight:8 }} />
+          <View style={{ flexDirection:'row', alignItems:'center', borderColor:colors.border, borderWidth:1, borderRadius:radii.button, paddingHorizontal:spacing.md }}>
+            <Ionicons name="lock-closed" size={18} color={colors.textTertiary} style={{ marginRight:spacing.sm }} />
             <TextInput
               style={{ flex:1, height:44 }}
               placeholder="Password"
-              placeholderTextColor="#8E8E93"
+              placeholderTextColor={colors.textTertiary}
               secureTextEntry={secure}
               autoCapitalize="none"
               value={pass}
               onChangeText={setPass}
             />
             <Pressable onPress={()=>setSecure(s=>!s)} hitSlop={10}>
-              <Ionicons name={secure ? 'eye' : 'eye-off'} size={18} color="#8E8E93" />
+              <Ionicons name={secure ? 'eye' : 'eye-off'} size={18} color={colors.textTertiary} />
             </Pressable>
           </View>
 
           {/* Forgot */}
-          <Pressable onPress={onForgot} style={{ alignSelf:'flex-end', marginTop:8 }}>
-            <Text style={{ color:'#007AFF' }}>Forgot Password?</Text>
+          <Pressable onPress={onForgot} style={{ alignSelf:'flex-end', marginTop:spacing.sm }}>
+            <Text style={{ color:colors.info }}>Forgot Password?</Text>
           </Pressable>
 
           {/* Sign in */}
@@ -93,8 +94,8 @@ export default function Login(){
             onPress={()=>onLogin()}
             disabled={loading}
             style={({pressed})=>({
-              marginTop:16, backgroundColor: loading ? '#C7C7CC' : '#FF3B30',
-              alignItems:'center', paddingVertical:12, borderRadius:12,
+              marginTop:spacing.lg, backgroundColor: loading ? '#C7C7CC' : colors.danger,
+              alignItems:'center', paddingVertical:spacing.md, borderRadius:radii.button,
               transform:[{ scale: pressed ? 0.98 : 1 }]
             })}
           >
@@ -105,11 +106,11 @@ export default function Login(){
 
           {/* Demo */}
           <Pressable onPress={onDemo} style={({pressed})=>({
-            marginTop:12, backgroundColor: pressed ? '#eee' : '#fff',
-            borderWidth:1, borderColor:'#E5E5EA', alignItems:'center',
-            paddingVertical:12, borderRadius:12
+            marginTop:spacing.md, backgroundColor: pressed ? '#eee' : colors.card,
+            borderWidth:1, borderColor:colors.border, alignItems:'center',
+            paddingVertical:spacing.md, borderRadius:radii.button
           })}>
-            <Text style={{ color:'#3A3A3C', fontWeight:'600' }}>Employee Demo</Text>
+            <Text style={{ color:colors.textSecondary, fontWeight:'600' }}>Employee Demo</Text>
           </Pressable>
         </View>
       </View>

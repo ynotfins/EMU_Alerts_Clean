@@ -17,3 +17,13 @@ export async function uploadIncidentMedia(incidentId:string, source:'incidents'|
   });
   return url;
 }
+
+export async function uploadIncidentDoc(incidentId:string, source:'incidents'|'alerts', uri:string, name:string){
+  const resp = await fetch(uri); 
+  const blob = await resp.blob();
+  const path = `incidents/${source}/${incidentId}/docs/${Date.now()}-${name}`;
+  const r = ref(storage, path); 
+  await uploadBytes(r, blob);
+  const url = await getDownloadURL(r); 
+  return { url, name };
+}

@@ -1,0 +1,82 @@
+# EMU Alerts Clean - Project Intelligence
+
+## Project Overview
+This is the EMU Alerts Clean project - a fresh alert notification system for EMU (Eastern Michigan University or EMU system). The project is in its initial setup phase with comprehensive memory bank documentation established.
+
+## Memory Bank Structure
+This project uses a comprehensive Memory Bank system located in `/memory-bank/`:
+- **CRITICAL**: Always read ALL memory bank files at the start of every session
+- Core files: projectbrief.md, productContext.md, activeContext.md, systemPatterns.md, techContext.md, progress.md
+- Memory bank is the single source of truth for project state and decisions
+
+## Development Preferences
+### Technology Stack (User Preferences)
+- **Package Manager**: pnpm (always use pnpm over npm/yarn)
+- **Framework**: Next.js with Turbopack for React projects
+- **Testing**: Vitest (run tests before pushing changes)
+- **Agent Mode**: Run terminal commands automatically with non-interactive flags (-y)
+- **Build Tools**: Prefer Turbopack over Webpack for dev servers
+
+### Development Workflow
+- Always use absolute paths when possible
+- Run commands automatically in Agent mode
+- Iterate until tests are green before pushing
+- Use Background Agents for long-running tasks
+- Ship end-to-end: implementation, tests, and minimal docs
+
+### Code Quality Standards
+- Explain in plain English with step-by-step approach
+- Use short code comments for clarity
+- Maintain clean, documented codebase
+- Default to safe commands; ask only if destructive
+- Optimize for autonomy - minimize manual paste requests
+
+## Project Patterns
+### Fresh Repository Characteristics
+- Started from completely empty repository
+- No legacy code to work around
+- Clean slate allows for modern architecture choices
+- All decisions are new and need to be documented
+
+### Documentation Strategy
+- Memory Bank is comprehensive and must be maintained
+- Update activeContext.md and progress.md frequently
+- Document all architectural decisions in systemPatterns.md
+- Keep techContext.md updated as stack evolves
+
+### Architecture Philosophy
+- Design for reliability (critical for alert systems)
+- Plan for scalability from the start
+- Security-first approach for user data
+- Clean separation of concerns
+- Event-driven architecture for alert processing
+
+## Key Project Insights
+- **Alert System Focus**: This is specifically for alert/notification management
+- **University Context**: Likely needs integration with EMU systems
+- **Reliability Critical**: Emergency alerts require high availability
+- **Multi-channel**: Email, SMS, push notifications needed
+- **User Management**: Both admin and end-user interfaces required
+
+## Development Context
+- **Environment**: Linux with bash shell
+- **Starting Point**: Completely fresh - no existing codebase
+- **Requirements Status**: Needs definition from stakeholders
+- **Current Phase**: Project initialization and planning
+
+## Next Session Preparation
+When starting any new session:
+1. Read ALL memory bank files first
+2. Check progress.md for current status
+3. Review activeContext.md for immediate focus
+4. Update documentation after any significant changes
+5. Maintain project intelligence in this file
+
+## Critical Reminders
+- Never assume previous context - always check memory bank
+- Update progress tracking after completing tasks
+- Document technology choices and architectural decisions
+- Maintain focus on alert system reliability and user experience
+- Keep stakeholder requirements gathering as high priority
+
+*This file grows with project intelligence - update as patterns emerge*

@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthed() { return request.auth != null; }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Users can read their own profile; supervisors can read all
+    match /users/{uid} {
+      allow read: if isAuthed() && (request.auth.uid == uid || userRole() == "supervisor");
+      allow write: if isAuthed() && request.auth.uid == uid; // user can update own profile (not role)
+    }
+
+    // Push tokens are user-specific
+    match /users/{uid}/pushTokens/{tokenId} {
+      allow read, write: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // Incidents/alerts readable by authed users
+    match /{colName=(incidents|alerts)}/{docId} {
+      allow read: if isAuthed();
+
+      // Employees + supervisors can write status/media; customers read-only
+      allow update, create: if isAuthed() && (userRole() in ["employee","supervisor"]);
+      allow delete: if isAuthed() && userRole() == "supervisor";
+    }
+
+    // Responses: employees/supervisors can create their own response logs
+    match /responses/{rid} {
+      allow read: if isAuthed();
+      allow create: if isAuthed() && (userRole() in ["employee","supervisor"]);
+      allow update, delete: if false; // immutable logs
+    }
+  }
+}

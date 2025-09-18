@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import { useUserProfile } from '../../hooks/useUserProfile';
 import { router } from 'expo-router';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase.config';
+import * as Notifications from 'expo-notifications';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const { profile } = useUserProfile();
 
   const writeTestIncident = async () => {
     try {
@@ -35,6 +38,18 @@ export default function ProfileScreen() {
     } catch (error) {
       console.error('Error creating test incident:', error);
       Alert.alert('Error', `Failed to create test incident: ${(error as Error).message}`);
+    }
+  };
+
+  const showPushToken = async () => {
+    try {
+      const token = await Notifications.getExpoPushTokenAsync();
+      Alert.alert('Push Token', JSON.stringify(token), [
+        { text: 'Copy Token', onPress: () => console.log('Token:', token.data) },
+        { text: 'OK' }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get push token: ' + (error as Error).message);
     }
   };
 
@@ -75,6 +90,13 @@ export default function ProfileScreen() {
           <Text style={styles.persistenceInfo}>
             🔒 Auth persistence is enabled with AsyncStorage
           </Text>
+
+          {profile && (
+            <Text style={styles.roleInfo}>
+              👤 Role: {profile.role.toUpperCase()} 
+              {profile.department && ` | ${profile.department}`}
+            </Text>
+          )}
         </View>
       )}
 
@@ -82,11 +104,16 @@ export default function ProfileScreen() {
         <Text style={styles.logoutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
-      {/* Test Button for Development */}
+      {/* Test Buttons for Development */}
       {__DEV__ && (
-        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#007AFF', marginBottom: 16 }]} onPress={writeTestIncident}>
-          <Text style={styles.logoutButtonText}>Create Test Incident</Text>
-        </TouchableOpacity>
+        <View>
+          <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#007AFF', marginBottom: 8 }]} onPress={writeTestIncident}>
+            <Text style={styles.logoutButtonText}>Create Test Incident</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#34C759', marginBottom: 16 }]} onPress={showPushToken}>
+            <Text style={styles.logoutButtonText}>Show Push Token</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       <View style={styles.testInfo}>
@@ -146,6 +173,11 @@ const styles = StyleSheet.create({
   persistenceInfo: {
     fontSize: 12,
     color: '#2196F3',
+  },
+  roleInfo: {
+    fontSize: 12,
+    color: '#9C27B0',
+    marginTop: 4,
   },
   logoutButton: {
     backgroundColor: '#FF3B30',

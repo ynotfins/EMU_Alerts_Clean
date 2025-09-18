@@ -1,11 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Platform, ActionSheetIOS, Alert } from 'react-native';
+import { ScrollView, Text, View, Pressable, Platform, ActionSheetIOS, Alert, Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as ImagePicker from 'expo-image-picker';
 import { useIncident } from '../../hooks/useIncident';
 import { useAuth } from '../../hooks/useAuth';
 import { openDirections } from '../../utils/navigation';
 import { logResponse, updateIncidentStatus } from '../../utils/response';
+import { uploadIncidentMedia } from '../../services/storage';
+import { RoleGate } from '../../components/RoleGate';
 import { useState } from 'react';
 
 export default function IncidentDetail(){
@@ -13,6 +16,7 @@ export default function IncidentDetail(){
   const { incident, updates, loading } = useIncident(id!, source);
   const { user } = useAuth();
   const [responding, setResponding] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   if (loading) {
     return <View style={{flex:1,alignItems:'center',justifyContent:'center'}}><Text>Loading…</Text></View>;
@@ -64,50 +68,52 @@ export default function IncidentDetail(){
             </View>
 
             {/* RESPOND button (top-right overlay) */}
-            <Pressable
-              onPress={async ()=>{
-                if (!coords) return;
-                try {
-                  if (!user?.uid) { Alert.alert('Sign in required','Please sign in to respond.'); return; }
-                  setResponding(true);
-                  await logResponse(incident.id, user.uid, 'responding');
-                  await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'en-route');
-                  openDirections(coords.latitude, coords.longitude, incident.alertType || 'Incident');
-                } catch(e:any) {
-                  Alert.alert('Failed to log response', e?.message ?? String(e));
-                  setResponding(false);
-                }
-              }}
-              onLongPress={()=>{
-                if (Platform.OS === 'ios') {
-                  ActionSheetIOS.showActionSheetWithOptions(
-                    { options:['Cancel','Mark Arrived','Mark Completed'], cancelButtonIndex:0, destructiveButtonIndex:2 },
-                    async (idx)=>{
-                      if (idx===1) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active'); // arrived => active
-                      if (idx===2) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
-                    }
-                  );
-                } else {
-                  Alert.alert('Update Status','Choose an action',[
-                    { text:'Mark Arrived', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active') },
-                    { text:'Mark Completed', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved') },
-                    { text:'Cancel', style:'cancel' }
-                  ]);
-                }
-              }}
-              style={({pressed})=>({
-                position:'absolute', top:12, right:12,
-                backgroundColor: pressed ? '#2E7D32' : '#34C759',
-                flexDirection:'row', alignItems:'center',
-                paddingHorizontal:12, paddingVertical:8, borderRadius:12,
-                shadowColor:'#000', shadowOffset:{width:0,height:2}, shadowOpacity:0.2, shadowRadius:4, elevation:4
-              })}
-            >
-              <Ionicons name="car" size={16} color="#fff" style={{ marginRight:6 }} />
-              <Text style={{ color:'#fff', fontWeight:'700' }}>
-                {responding ? 'RESPONDING…' : (Platform.OS === 'web' ? 'OPEN MAPS' : 'RESPOND')}
-              </Text>
-            </Pressable>
+            <RoleGate allow={['employee','supervisor']}>
+              <Pressable
+                onPress={async ()=>{
+                  if (!coords) return;
+                  try {
+                    if (!user?.uid) { Alert.alert('Sign in required','Please sign in to respond.'); return; }
+                    setResponding(true);
+                    await logResponse(incident.id, user.uid, 'responding');
+                    await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'en-route');
+                    openDirections(coords.latitude, coords.longitude, incident.alertType || 'Incident');
+                  } catch(e:any) {
+                    Alert.alert('Failed to log response', e?.message ?? String(e));
+                    setResponding(false);
+                  }
+                }}
+                onLongPress={()=>{
+                  if (Platform.OS === 'ios') {
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      { options:['Cancel','Mark Arrived','Mark Completed'], cancelButtonIndex:0, destructiveButtonIndex:2 },
+                      async (idx)=>{
+                        if (idx===1) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active'); // arrived => active
+                        if (idx===2) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
+                      }
+                    );
+                  } else {
+                    Alert.alert('Update Status','Choose an action',[
+                      { text:'Mark Arrived', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active') },
+                      { text:'Mark Completed', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved') },
+                      { text:'Cancel', style:'cancel' }
+                    ]);
+                  }
+                }}
+                style={({pressed})=>({
+                  position:'absolute', top:12, right:12,
+                  backgroundColor: pressed ? '#2E7D32' : '#34C759',
+                  flexDirection:'row', alignItems:'center',
+                  paddingHorizontal:12, paddingVertical:8, borderRadius:12,
+                  shadowColor:'#000', shadowOffset:{width:0,height:2}, shadowOpacity:0.2, shadowRadius:4, elevation:4
+                })}
+              >
+                <Ionicons name="car" size={16} color="#fff" style={{ marginRight:6 }} />
+                <Text style={{ color:'#fff', fontWeight:'700' }}>
+                  {responding ? 'RESPONDING…' : (Platform.OS === 'web' ? 'OPEN MAPS' : 'RESPOND')}
+                </Text>
+              </Pressable>
+            </RoleGate>
           </View>
         ) : (
           <View style={{ flex:1, alignItems:'center', justifyContent:'center' }}>
@@ -124,9 +130,52 @@ export default function IncidentDetail(){
         <Text style={{ fontWeight:'700', marginTop:8 }}>{incident.address}</Text>
       </View>
 
+      {/* Media Actions */}
+      <View style={{ paddingHorizontal:16, marginBottom:8, flexDirection:'row', gap:12 }}>
+        <RoleGate allow={['employee','supervisor']}>
+          <Pressable
+            onPress={async ()=>{
+              const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!perm.granted) { Alert.alert('Permission required','Allow photo library access.'); return; }
+              const pick = await ImagePicker.launchImageLibraryAsync({ 
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+                quality:0.8 
+              });
+              if (pick.canceled || !pick.assets?.length) return;
+              setUploading(true);
+              try {
+                await uploadIncidentMedia(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', pick.assets[0].uri);
+                Alert.alert('Uploaded','Photo attached to incident.');
+              } catch(e:any){ 
+                Alert.alert('Upload failed', e?.message ?? String(e)); 
+              }
+              finally { 
+                setUploading(false); 
+              }
+            }}
+            style={({pressed})=>({
+              backgroundColor: pressed ? '#eee' : '#fff',
+              borderWidth:1, borderColor:'#E5E5EA', paddingHorizontal:12, paddingVertical:10, borderRadius:12
+            })}
+          >
+            <Text style={{ fontWeight:'600' }}>{uploading ? 'Uploading…' : 'Add Photo'}</Text>
+          </Pressable>
+        </RoleGate>
+      </View>
+
       {/* Timeline */}
       <View style={{ paddingHorizontal:16, paddingBottom:24 }}>
         <Text style={{ fontSize:16, fontWeight:'700', marginBottom:8 }}>Timeline & Updates</Text>
+        
+        {/* Media Gallery */}
+        {(incident as any)?.media?.length ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom:10 }}>
+            {(incident as any).media.map((m:any, idx:number)=>(
+              <Image key={idx} source={{ uri: m.url }} style={{ width:120, height:90, borderRadius:10, marginRight:8, backgroundColor:'#eee' }}/>
+            ))}
+          </ScrollView>
+        ) : null}
+        
         {updates.map((u: any) => (
           <View key={`${u.source}:${u.id}`} style={{ paddingVertical:10, borderBottomWidth:1, borderBottomColor:'#eee' }}>
             <View style={{ flexDirection:'row', alignItems:'center', marginBottom:4 }}>

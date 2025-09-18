@@ -1,180 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { router } from 'expo-router';
-import { db } from '../../firebase.config';
+import { Link } from 'expo-router';
+import { FlatList, RefreshControl, Text, TextInput, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useEffect, useMemo, useState } from 'react';
+import * as Location from 'expo-location';
+import { useIncidents } from '../../hooks/useIncidents';
+import { haversine, humanDistance } from '../../utils/distance';
 
-interface Incident {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: any;
-  location: string;
-  severity: string;
-}
+export default function Incidents(){
+  const { incidents, loading, online } = useIncidents();
+  const [query, setQuery] = useState('');
+  const [pulling, setPulling] = useState(false);
+  const [userLoc, setUserLoc] = useState<{lat:number; lng:number}|null>(null);
 
-export default function IncidentsScreen() {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(()=>{ if (!loading) setPulling(false); }, [loading]);
 
-  useEffect(() => {
-    const q = query(collection(db, 'incidents'), orderBy('timestamp', 'desc'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const incidentList: Incident[] = [];
-      querySnapshot.forEach((doc) => {
-        incidentList.push({
-          id: doc.id,
-          ...doc.data()
-        } as Incident);
-      });
-      setIncidents(incidentList);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching incidents:', error);
-      setLoading(false);
+  useEffect(()=>{
+    let mounted = true;
+    (async ()=>{
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const pos = await Location.getCurrentPositionAsync({});
+      if (!mounted) return;
+      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    })();
+    return ()=>{ mounted = false; };
+  },[]);
+
+  const normalized = (s:string) => s.normalize('NFKD').toLowerCase();
+  const filtered = useMemo(()=>{
+    if (!query.trim()) return incidents;
+    const q = normalized(query);
+    return incidents.filter(x=>{
+      const hay = [
+        x.address, x.city, x.county, x.state,
+        x.alertType, x.message, x.priority, x.status
+      ].filter(Boolean).map((s: any) => normalized(s)).join(' ');
+      return hay.includes(q);
     });
-
-    return () => unsubscribe();
-  }, []);
-
-  const writeTestIncident = async () => {
-    try {
-      const testIncident = {
-        title: `Test Incident ${new Date().getTime()}`,
-        description: 'This is a test incident created for verification',
-        alertType: 'Emergency Response',
-        address: '123 Campus Drive, Ypsilanti, MI',
-        city: 'Ypsilanti',
-        county: 'Washtenaw',
-        state: 'MI',
-        priority: 'high',
-        coordinates: {
-          latitude: 42.241,
-          longitude: -83.613
-        },
-        timestamp: new Date(),
-        location: 'EMU Campus',
-        severity: 'High',
-        type: 'Test'
-      };
-
-      await addDoc(collection(db, 'incidents'), testIncident);
-      Alert.alert('Success', 'Test incident with coordinates created successfully!');
-    } catch (error) {
-      console.error('Error creating test incident:', error);
-      Alert.alert('Error', `Failed to create test incident: ${(error as Error).message}`);
-    }
-  };
+  }, [incidents, query]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>EMU Alerts - Incidents</Text>
-      
-      {/* Test Button for Data Pipeline (Development Only) */}
-      {__DEV__ && (
-        <TouchableOpacity style={styles.testButton} onPress={writeTestIncident}>
-          <Text style={styles.testButtonText}>Write Test Incident</Text>
-        </TouchableOpacity>
-      )}
+    <View style={{ flex:1, backgroundColor:'#F8F9FA', paddingTop:12 }}>
+      {/* Status + search bar */}
+      <View style={{ marginHorizontal:12, marginBottom:8 }}>
+        <View style={{
+          flexDirection:'row', alignItems:'center', justifyContent:'space-between',
+          marginBottom:8
+        }}>
+          <Text style={{ fontSize:20, fontWeight:'700' }}>Incidents</Text>
+          <View style={{ flexDirection:'row', alignItems:'center' }}>
+            <View style={{
+              width:8, height:8, borderRadius:4,
+              backgroundColor: online ? '#34C759' : '#FF9500', marginRight:6
+            }}/>
+            <Text style={{ color: online ? '#34C759' : '#FF9500', fontWeight:'600' }}>
+              {online ? 'Online' : 'From cache'}
+            </Text>
+          </View>
+        </View>
 
-      {loading ? (
-        <Text style={styles.loadingText}>Loading incidents...</Text>
-      ) : (
-        <ScrollView style={styles.scrollView}>
-          {incidents.length === 0 ? (
-            <Text style={styles.noIncidentsText}>No incidents found</Text>
-          ) : (
-            incidents.map((incident) => (
-              <TouchableOpacity 
-                key={incident.id} 
-                style={styles.incidentCard}
-                onPress={() => router.push(`/incident/${incident.id}` as any)}
-              >
-                <Text style={styles.incidentTitle}>{incident.title}</Text>
-                <Text style={styles.incidentDescription}>{incident.description}</Text>
-                <Text style={styles.incidentMeta}>
-                  {incident.location} • {incident.severity}
-                </Text>
-                <Text style={styles.incidentTimestamp}>
-                  {incident.timestamp?.toDate?.()?.toLocaleString() || 'No timestamp'}
-                </Text>
-              </TouchableOpacity>
-            ))
+        <View style={{
+          backgroundColor:'#FFFFFF', borderColor:'#E5E5EA', borderWidth:1,
+          borderRadius:12, paddingHorizontal:12, paddingVertical:8, flexDirection:'row', alignItems:'center'
+        }}>
+          <Ionicons name="search" size={18} color="#8E8E93" style={{ marginRight:8 }}/>
+          <TextInput
+            placeholder="Search address, city, alert type…"
+            placeholderTextColor="#8E8E93"
+            value={query}
+            onChangeText={setQuery}
+            style={{ flex:1, paddingVertical:4 }}
+            autoCorrect={false}
+            autoCapitalize="none"
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <Ionicons name="close-circle" size={18} color="#C7C7CC" onPress={()=>setQuery('')} />
           )}
-        </ScrollView>
-      )}
+        </View>
+
+        <Text style={{ color:'#8E8E93', marginTop:6 }}>
+          {filtered.length} result{filtered.length===1?'':'s'}
+        </Text>
+      </View>
+
+      {/* List */}
+      <FlatList
+        data={filtered}
+        keyExtractor={(x)=>`${x.source}:${x.id}`}
+        refreshControl={
+          <RefreshControl refreshing={pulling || loading} onRefresh={()=>{ setPulling(true); /* live listeners auto-refresh */ }} />
+        }
+        renderItem={({item})=>(
+          <Link href={{ pathname:'/incident/[id]' as any, params:{ id: item.id, source:item.source }}} asChild>
+            <View style={{
+              backgroundColor:'#fff', marginHorizontal:12, marginBottom:10, padding:16, borderRadius:16,
+              borderLeftWidth:4,
+              borderLeftColor: item.priority==='critical'?'#FF3B30': item.priority==='high'?'#FF9500': item.priority==='medium'?'#FFCC00':'#007AFF',
+              shadowColor:'#000', shadowOffset:{ width:0, height:2 }, shadowOpacity:0.06, shadowRadius:8, elevation:2
+            }}>
+              <Text style={{ fontWeight:'700' }}>{item.alertType} • {item.priority.toUpperCase()}</Text>
+              <Text style={{ color:'#3A3A3C' }}>{item.state} | {item.county} | {item.city}</Text>
+              <Text numberOfLines={2} style={{ fontWeight:'600', marginTop:2 }}>
+                {item.address}
+                {userLoc && item.coordinates
+                  ? ` · ${humanDistance(haversine(userLoc.lat, userLoc.lng, item.coordinates.latitude, item.coordinates.longitude),'mi')} away`
+                  : ''}
+              </Text>
+              <Text numberOfLines={2} style={{ color:'#555', marginTop:4 }}>{item.message}</Text>
+            </View>
+          </Link>
+        )}
+        ListEmptyComponent={<Text style={{ textAlign:'center', marginTop:40, color:'#8E8E93' }}>No incidents yet.</Text>}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  testButton: {
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  testButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  loadingText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-  },
-  noIncidentsText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-    marginTop: 20,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  incidentCard: {
-    backgroundColor: 'white',
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  incidentTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  incidentDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  incidentMeta: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 4,
-  },
-  incidentTimestamp: {
-    fontSize: 12,
-    color: '#999',
-  },
-});

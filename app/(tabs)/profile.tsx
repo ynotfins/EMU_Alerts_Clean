@@ -2,9 +2,41 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { router } from 'expo-router';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../../firebase.config';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+
+  const writeTestIncident = async () => {
+    try {
+      const testIncident = {
+        title: `Test Incident ${new Date().getTime()}`,
+        description: 'This is a test incident created for verification',
+        alertType: 'Emergency Response',
+        address: '123 Campus Drive, Ypsilanti, MI',
+        city: 'Ypsilanti',
+        county: 'Washtenaw',
+        state: 'MI',
+        priority: 'high',
+        message: 'Emergency response needed for campus incident. Please respond immediately.',
+        coordinates: {
+          latitude: 42.241,
+          longitude: -83.613
+        },
+        timestamp: new Date(),
+        location: 'EMU Campus',
+        severity: 'High',
+        type: 'Test'
+      };
+
+      await addDoc(collection(db, 'incidents'), testIncident);
+      Alert.alert('Success', 'Test incident with coordinates created successfully!');
+    } catch (error) {
+      console.error('Error creating test incident:', error);
+      Alert.alert('Error', `Failed to create test incident: ${(error as Error).message}`);
+    }
+  };
 
   const handleLogout = async () => {
     Alert.alert(
@@ -49,6 +81,13 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Sign Out</Text>
       </TouchableOpacity>
+
+      {/* Test Button for Development */}
+      {__DEV__ && (
+        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#007AFF', marginBottom: 16 }]} onPress={writeTestIncident}>
+          <Text style={styles.logoutButtonText}>Create Test Incident</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.testInfo}>
         <Text style={styles.testTitle}>Auth Persistence Test:</Text>

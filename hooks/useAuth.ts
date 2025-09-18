@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, onAuthStateChanged, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase.config';
 
 export function useAuth() {
@@ -16,6 +16,21 @@ export function useAuth() {
     return unsubscribe;
   }, []);
 
+  const signIn = async (email: string, password: string) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      // Try creating account if sign-in fails
+      try {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        return result.user;
+      } catch (createError) {
+        throw error; // Throw original sign-in error
+      }
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -27,6 +42,7 @@ export function useAuth() {
   return {
     user,
     isLoading,
+    signIn,
     logout,
     isAuthenticated: !!user,
   };

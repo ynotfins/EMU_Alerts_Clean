@@ -1,13 +1,18 @@
 import { useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, View, Pressable, Platform } from 'react-native';
+import { ScrollView, Text, View, Pressable, Platform, ActionSheetIOS, Alert } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useIncident } from '../../hooks/useIncident';
+import { useAuth } from '../../hooks/useAuth';
 import { openDirections } from '../../utils/navigation';
+import { logResponse, updateIncidentStatus } from '../../utils/response';
+import { useState } from 'react';
 
 export default function IncidentDetail(){
   const { id, source } = useLocalSearchParams<{id:string; source?:'alerts'|'incidents'}>();
   const { incident, updates, loading } = useIncident(id!, source);
+  const { user } = useAuth();
+  const [responding, setResponding] = useState(false);
 
   if (loading) {
     return <View style={{flex:1,alignItems:'center',justifyContent:'center'}}><Text>Loading…</Text></View>;
@@ -60,9 +65,35 @@ export default function IncidentDetail(){
 
             {/* RESPOND button (top-right overlay) */}
             <Pressable
-              onPress={()=>{
+              onPress={async ()=>{
                 if (!coords) return;
-                openDirections(coords.latitude, coords.longitude, incident.alertType || 'Incident');
+                try {
+                  if (!user?.uid) { Alert.alert('Sign in required','Please sign in to respond.'); return; }
+                  setResponding(true);
+                  await logResponse(incident.id, user.uid, 'responding');
+                  await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'en-route');
+                  openDirections(coords.latitude, coords.longitude, incident.alertType || 'Incident');
+                } catch(e:any) {
+                  Alert.alert('Failed to log response', e?.message ?? String(e));
+                  setResponding(false);
+                }
+              }}
+              onLongPress={()=>{
+                if (Platform.OS === 'ios') {
+                  ActionSheetIOS.showActionSheetWithOptions(
+                    { options:['Cancel','Mark Arrived','Mark Completed'], cancelButtonIndex:0, destructiveButtonIndex:2 },
+                    async (idx)=>{
+                      if (idx===1) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active'); // arrived => active
+                      if (idx===2) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
+                    }
+                  );
+                } else {
+                  Alert.alert('Update Status','Choose an action',[
+                    { text:'Mark Arrived', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active') },
+                    { text:'Mark Completed', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved') },
+                    { text:'Cancel', style:'cancel' }
+                  ]);
+                }
               }}
               style={({pressed})=>({
                 position:'absolute', top:12, right:12,
@@ -74,7 +105,7 @@ export default function IncidentDetail(){
             >
               <Ionicons name="car" size={16} color="#fff" style={{ marginRight:6 }} />
               <Text style={{ color:'#fff', fontWeight:'700' }}>
-                {Platform.OS === 'web' ? 'OPEN MAPS' : 'RESPOND'}
+                {responding ? 'RESPONDING…' : (Platform.OS === 'web' ? 'OPEN MAPS' : 'RESPOND')}
               </Text>
             </Pressable>
           </View>

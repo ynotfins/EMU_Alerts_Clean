@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { Stack, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { View } from 'react-native';
+import ToastHost from './_toast-host';
 import { useAuth } from '../hooks/useAuth';
 
-export default function RootLayout() {
+export default function Root() {
   const { user, isLoading } = useAuth();
 
   useEffect(() => {
@@ -21,13 +22,13 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <StatusBar style="auto" />
-      <Stack>
+    <View style={{ flex:1 }}>
+      <Stack screenOptions={{ headerStyle:{backgroundColor:'#2196F3'}, headerTintColor:'#fff' }} >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="incident/[id]" options={{ title: 'Incident Details' }} />
       </Stack>
-    </>
+      <ToastHost />
+    </View>
   );
 }

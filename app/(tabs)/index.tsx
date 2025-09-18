@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { FlatList, RefreshControl, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { FlatList, RefreshControl, Text, TextInput, View, TouchableOpacity, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useMemo, useState } from 'react';
 import * as Location from 'expo-location';
@@ -13,6 +13,8 @@ export default function Incidents(){
   const [query, setQuery] = useState('');
   const [pulling, setPulling] = useState(false);
   const [userLoc, setUserLoc] = useState<{lat:number; lng:number}|null>(null);
+  const [prio, setPrio] = useState<'all'|'critical'|'high'|'medium'|'low'>('all');
+  const [nearby, setNearby] = useState(false);
 
   useEffect(()=>{ if (!loading) setPulling(false); }, [loading]);
 
@@ -30,16 +32,24 @@ export default function Incidents(){
 
   const normalized = (s:string) => s.normalize('NFKD').toLowerCase();
   const filtered = useMemo(()=>{
-    if (!query.trim()) return incidents;
-    const q = normalized(query);
-    return incidents.filter(x=>{
+    const base = !query.trim() ? incidents : incidents.filter(x=>{
       const hay = [
         x.address, x.city, x.county, x.state,
         x.alertType, x.message, x.priority, x.status
       ].filter(Boolean).map((s: any) => normalized(s)).join(' ');
+      const q = normalized(query);
       return hay.includes(q);
     });
-  }, [incidents, query]);
+    const byPrio = prio==='all' ? base : base.filter(x=>x.priority===prio);
+    if (nearby && userLoc) {
+      return [...byPrio].sort((a,b)=>{
+        const da = a.coordinates ? haversine(userLoc.lat,userLoc.lng,a.coordinates.latitude,a.coordinates.longitude) : Number.POSITIVE_INFINITY;
+        const db = b.coordinates ? haversine(userLoc.lat,userLoc.lng,b.coordinates.latitude,b.coordinates.longitude) : Number.POSITIVE_INFINITY;
+        return da - db;
+      });
+    }
+    return byPrio;
+  }, [incidents, query, prio, nearby, userLoc]);
 
   const lastUpdated = filtered[0]?.timestamp ? new Date(filtered[0].timestamp.seconds ? filtered[0].timestamp.seconds * 1000 : filtered[0].timestamp) : null;
   function fmtTime(d: Date){ return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
@@ -99,6 +109,23 @@ export default function Incidents(){
         <Text style={{ color:'#8E8E93', marginTop:6 }}>
           {filtered.length} result{filtered.length===1?'':'s'}
         </Text>
+
+        <View style={{ flexDirection:'row', gap:8, marginTop:8, flexWrap:'wrap' }}>
+          {(['all','critical','high','medium','low'] as const).map(p=>(
+            <Pressable key={p} onPress={()=>setPrio(p)} style={{
+              backgroundColor: prio===p ? '#2196F3' : '#fff',
+              borderWidth:1, borderColor:'#E5E5EA', paddingHorizontal:10, paddingVertical:6, borderRadius:16
+            }}>
+              <Text style={{ color: prio===p ? '#fff' : '#3A3A3C', fontWeight:'600' }}>{p.toUpperCase()}</Text>
+            </Pressable>
+          ))}
+          <Pressable onPress={()=>setNearby(n=>!n)} style={{
+            backgroundColor: nearby ? '#2196F3' : '#fff',
+            borderWidth:1, borderColor:'#E5E5EA', paddingHorizontal:10, paddingVertical:6, borderRadius:16
+          }}>
+            <Text style={{ color: nearby ? '#fff' : '#3A3A3C', fontWeight:'600' }}>NEARBY</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* List */}

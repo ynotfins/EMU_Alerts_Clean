@@ -4,6 +4,7 @@ import { db } from '../firebase.config';
 
 interface Incident {
   id: string;
+  source?: string;
   alertType: string;
   address: string;
   city: string;
@@ -45,6 +46,7 @@ export function useIncident(incidentId: string, source?: 'alerts' | 'incidents')
         if (docSnapshot.exists()) {
           setIncident({
             id: docSnapshot.id,
+            source: source || 'incidents',
             ...docSnapshot.data()
           } as Incident);
         } else {

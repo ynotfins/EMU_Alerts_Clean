@@ -1,159 +1,118 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase.config';
-import { router } from 'expo-router';
+import { useState } from 'react';
+import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { showMessage } from 'react-native-flash-message';
+import { useAuth } from '../../hooks/useAuth';
 
-export default function LoginScreen() {
+export default function Login(){
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [pass, setPass] = useState('');
+  const [secure, setSecure] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  async function onLogin(e = email, p = pass){
+    if (!e || !p) {
+      showMessage({ message:'Enter email and password', type:'warning' }); return;
     }
-
-    setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('Login Failed', (error as Error).message);
+      setLoading(true);
+      await signIn(e.trim(), p);
+      showMessage({ message:'Signed in', type:'success' });
+    } catch (err:any) {
+      const msg = err?.message || 'Sign-in failed';
+      showMessage({ message: msg, type:'danger' });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
-  const handleSignUp = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+  async function onDemo(){
+    // Replace with a real demo user you created
+    onLogin('demo@emualerts.app','DemoPass123!');
+  }
 
-    setIsLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Sign up error:', error);
-      Alert.alert('Sign Up Failed', (error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  function onForgot(){
+    showMessage({ message:'Password reset coming soon. Contact your supervisor.', type:'info' });
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>EMU Alerts</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+    <KeyboardAvoidingView style={{ flex:1, backgroundColor:'#F8F9FA' }} behavior={Platform.OS==='ios' ? 'padding' : undefined}>
+      <View style={{ flex:1, padding:20, justifyContent:'center' }}>
+        {/* Header */}
+        <View style={{ alignItems:'center', marginBottom:24 }}>
+          <View style={{ width:80, height:80, borderRadius:40, backgroundColor:'#fff', alignItems:'center', justifyContent:'center', shadowColor:'#000', shadowOpacity:0.1, shadowRadius:8, elevation:3 }}>
+            <Ionicons name="flame" size={40} color="#FF3B30" />
+          </View>
+          <Text style={{ fontSize:32, fontWeight:'700', marginTop:12 }}>EMU Alerts</Text>
+          <Text style={{ color:'#8E8E93' }}>Fire Incident Management System</Text>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
+        {/* Form */}
+        <View style={{ backgroundColor:'#fff', borderRadius:16, padding:16, shadowColor:'#000', shadowOpacity:0.06, shadowRadius:10, elevation:2 }}>
+          {/* Email */}
+          <View style={{ flexDirection:'row', alignItems:'center', borderColor:'#E5E5EA', borderWidth:1, borderRadius:12, paddingHorizontal:12, marginBottom:12 }}>
+            <Ionicons name="mail" size={18} color="#8E8E93" style={{ marginRight:8 }} />
+            <TextInput
+              style={{ flex:1, height:44 }}
+              placeholder="Email"
+              placeholderTextColor="#8E8E93"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              returnKeyType="next"
+            />
+          </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+          {/* Password */}
+          <View style={{ flexDirection:'row', alignItems:'center', borderColor:'#E5E5EA', borderWidth:1, borderRadius:12, paddingHorizontal:12 }}>
+            <Ionicons name="lock-closed" size={18} color="#8E8E93" style={{ marginRight:8 }} />
+            <TextInput
+              style={{ flex:1, height:44 }}
+              placeholder="Password"
+              placeholderTextColor="#8E8E93"
+              secureTextEntry={secure}
+              autoCapitalize="none"
+              value={pass}
+              onChangeText={setPass}
+            />
+            <Pressable onPress={()=>setSecure(s=>!s)} hitSlop={10}>
+              <Ionicons name={secure ? 'eye' : 'eye-off'} size={18} color="#8E8E93" />
+            </Pressable>
+          </View>
 
-      <TouchableOpacity 
-        style={[styles.button, isLoading && styles.buttonDisabled]} 
-        onPress={handleLogin}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>
-          {isLoading ? 'Signing In...' : 'Sign In'}
-        </Text>
-      </TouchableOpacity>
+          {/* Forgot */}
+          <Pressable onPress={onForgot} style={{ alignSelf:'flex-end', marginTop:8 }}>
+            <Text style={{ color:'#007AFF' }}>Forgot Password?</Text>
+          </Pressable>
 
-      <TouchableOpacity 
-        style={[styles.button, styles.secondaryButton, isLoading && styles.buttonDisabled]} 
-        onPress={handleSignUp}
-        disabled={isLoading}
-      >
-        <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-          {isLoading ? 'Creating Account...' : 'Create Account'}
-        </Text>
-      </TouchableOpacity>
+          {/* Sign in */}
+          <Pressable
+            onPress={()=>onLogin()}
+            disabled={loading}
+            style={({pressed})=>({
+              marginTop:16, backgroundColor: loading ? '#C7C7CC' : '#FF3B30',
+              alignItems:'center', paddingVertical:12, borderRadius:12,
+              transform:[{ scale: pressed ? 0.98 : 1 }]
+            })}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={{ color:'#fff', fontWeight:'700' }}>Sign In</Text>}
+          </Pressable>
 
-      {/* Test credentials hint */}
-      <Text style={styles.testHint}>
-        For testing: Use any email/password combination.{'\n'}
-        Sign up will create a new account.
-      </Text>
-    </View>
+          {/* Demo */}
+          <Pressable onPress={onDemo} style={({pressed})=>({
+            marginTop:12, backgroundColor: pressed ? '#eee' : '#fff',
+            borderWidth:1, borderColor:'#E5E5EA', alignItems:'center',
+            paddingVertical:12, borderRadius:12
+          })}>
+            <Text style={{ color:'#3A3A3C', fontWeight:'600' }}>Employee Demo</Text>
+          </Pressable>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 40,
-    color: '#666',
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#007AFF',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  secondaryButtonText: {
-    color: '#007AFF',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  testHint: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#999',
-    marginTop: 20,
-    lineHeight: 16,
-  },
-});

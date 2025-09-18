@@ -11,8 +11,9 @@ import { logResponse, updateIncidentStatus } from '../../utils/response';
 import { uploadIncidentMedia, uploadIncidentDoc } from '../../services/storage';
 import { RoleGate } from '../../components/RoleGate';
 import { usePresence } from '../../hooks/usePresence';
+import { logCaseEvent } from '../../services/timeline';
 import { colors, radii, shadowCard, spacing } from '../../ui/theme';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase.config';
 import { useState, useEffect } from 'react';
 
@@ -25,17 +26,32 @@ export default function IncidentDetail(){
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [etaMins, setEtaMins] = useState('');
+  const [onSceneReport, setOnSceneReport] = useState('');
+  const [contactAttempted, setContactAttempted] = useState(false);
+  const [secondaryPhone, setSecondaryPhone] = useState('');
   
   // Track location when responding
   usePresence(responding);
 
-  // Initialize contact info when incident loads
+  // Initialize contact info and employee inputs when incident loads
   useEffect(() => {
     if (incident?.contact) {
       setContactName(incident.contact.name || '');
       setContactPhone(incident.contact.phone || '');
     }
-  }, [incident]);
+    
+    // Initialize employee inputs if they exist
+    if (incident?.employeeInputs && user?.uid) {
+      const userInputs = incident.employeeInputs[user.uid];
+      if (userInputs) {
+        setEtaMins(userInputs.etaMins?.toString() || '');
+        setOnSceneReport(userInputs.onSceneReport || '');
+        setContactAttempted(userInputs.contactAttempted || false);
+        setSecondaryPhone(userInputs.secondaryPhone || '');
+      }
+    }
+  }, [incident, user?.uid]);
 
   const saveContact = async () => {
     if (!user?.uid || !incident) return;
@@ -43,9 +59,47 @@ export default function IncidentDetail(){
       await updateDoc(doc(db, (incident.source || 'incidents') as 'incidents'|'alerts', incident.id), {
         contact: { name: contactName.trim(), phone: contactPhone.trim() }
       });
+      // Log to case timeline
+      await logCaseEvent(incident.id, 'homeowner', { 
+        name: contactName.trim(), 
+        phone: contactPhone.trim(),
+        updatedBy: user.uid 
+      });
       Alert.alert('Success', 'Contact information saved!');
     } catch (error) {
       Alert.alert('Error', 'Failed to save contact: ' + (error as Error).message);
+    }
+  };
+
+  const saveEmployeeInputs = async () => {
+    if (!user?.uid || !incident) return;
+    try {
+      const employeeData = {
+        etaMins: etaMins ? parseInt(etaMins) : undefined,
+        onSceneReport: onSceneReport.trim() || undefined,
+        contactAttempted,
+        secondaryPhone: secondaryPhone.trim() || undefined,
+        updatedAt: serverTimestamp()
+      };
+
+      // Filter out undefined values
+      const cleanData = Object.fromEntries(
+        Object.entries(employeeData).filter(([_, v]) => v !== undefined)
+      );
+
+      await updateDoc(doc(db, (incident.source || 'incidents') as 'incidents'|'alerts', incident.id), {
+        [`employeeInputs.${user.uid}`]: cleanData
+      });
+      
+      // Log to case timeline
+      await logCaseEvent(incident.id, 'employee-input', { 
+        employeeUid: user.uid,
+        fields: Object.keys(cleanData).filter(k => k !== 'updatedAt')
+      });
+      
+      Alert.alert('Success', 'Your information saved!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save information: ' + (error as Error).message);
     }
   };
 
@@ -65,6 +119,13 @@ export default function IncidentDetail(){
       
       await updateDoc(doc(db, (incident.source || 'incidents') as 'incidents'|'alerts', incident.id), { 
         docs: arrayUnion({ url, name }) 
+      });
+      
+      // Log to case timeline
+      await logCaseEvent(incident.id, 'document', { 
+        name, 
+        url, 
+        uploadedBy: user?.uid 
       });
       
       Alert.alert('Success', 'Document uploaded!');
@@ -134,6 +195,8 @@ export default function IncidentDetail(){
                     setResponding(true);
                     await logResponse(incident.id, user.uid, 'responding');
                     await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'en-route');
+                    // Log to case timeline
+                    await logCaseEvent(incident.id, 'response', { status: 'responding', employeeUid: user.uid });
                     openDirections(coords.latitude, coords.longitude, incident.alertType || 'Incident');
                   } catch(e:any) {
                     Alert.alert('Failed to log response', e?.message ?? String(e));
@@ -145,14 +208,32 @@ export default function IncidentDetail(){
                     ActionSheetIOS.showActionSheetWithOptions(
                       { options:['Cancel','Mark Arrived','Mark Completed'], cancelButtonIndex:0, destructiveButtonIndex:2 },
                       async (idx)=>{
-                        if (idx===1) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active'); // arrived => active
-                        if (idx===2) await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
+                        if (idx===1) {
+                          await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active'); // arrived => active
+                          await logCaseEvent(incident.id, 'response', { status: 'arrived', employeeUid: user?.uid });
+                        }
+                        if (idx===2) {
+                          await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
+                          await logCaseEvent(incident.id, 'response', { status: 'completed', employeeUid: user?.uid });
+                        }
                       }
                     );
                   } else {
                     Alert.alert('Update Status','Choose an action',[
-                      { text:'Mark Arrived', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active') },
-                      { text:'Mark Completed', onPress:()=>updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved') },
+                      { 
+                        text:'Mark Arrived', 
+                        onPress: async ()=> {
+                          await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'active');
+                          await logCaseEvent(incident.id, 'response', { status: 'arrived', employeeUid: user?.uid });
+                        }
+                      },
+                      { 
+                        text:'Mark Completed', 
+                        onPress: async ()=> {
+                          await updateIncidentStatus(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', 'resolved');
+                          await logCaseEvent(incident.id, 'response', { status: 'completed', employeeUid: user?.uid });
+                        }
+                      },
                       { text:'Cancel', style:'cancel' }
                     ]);
                   }
@@ -258,6 +339,135 @@ export default function IncidentDetail(){
         </View>
       </RoleGate>
 
+      {/* Employee Information Panel */}
+      <RoleGate allow={['employee','supervisor']}>
+        <View style={{ paddingHorizontal:spacing.lg, marginBottom:spacing.md }}>
+          <Text style={{ fontSize:16, fontWeight:'700', marginBottom:spacing.sm, color:colors.text }}>
+            Employee Information
+          </Text>
+          
+          <View style={{ flexDirection:'row', gap:spacing.sm, marginBottom:spacing.sm }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color:colors.textSecondary, marginBottom:spacing.xs }}>ETA (minutes)</Text>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: radii.button,
+                  padding: spacing.md,
+                  backgroundColor: colors.card
+                }}
+                placeholder="30"
+                value={etaMins}
+                onChangeText={setEtaMins}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color:colors.textSecondary, marginBottom:spacing.xs }}>Secondary Phone</Text>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: radii.button,
+                  padding: spacing.md,
+                  backgroundColor: colors.card
+                }}
+                placeholder="(555) 123-4567"
+                value={secondaryPhone}
+                onChangeText={setSecondaryPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          <View style={{ marginBottom:spacing.sm }}>
+            <Text style={{ color:colors.textSecondary, marginBottom:spacing.xs }}>On-Scene Report</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: radii.button,
+                padding: spacing.md,
+                backgroundColor: colors.card,
+                minHeight: 80,
+                textAlignVertical: 'top'
+              }}
+              placeholder="Describe current situation, actions taken, additional resources needed..."
+              value={onSceneReport}
+              onChangeText={setOnSceneReport}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          <View style={{ flexDirection:'row', alignItems:'center', marginBottom:spacing.md }}>
+            <Pressable 
+              onPress={() => setContactAttempted(!contactAttempted)}
+              style={{ 
+                flexDirection:'row', 
+                alignItems:'center',
+                flex: 1
+              }}
+            >
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 4,
+                borderWidth: 2,
+                borderColor: contactAttempted ? colors.success : colors.border,
+                backgroundColor: contactAttempted ? colors.success : colors.card,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: spacing.sm
+              }}>
+                {contactAttempted && <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>✓</Text>}
+              </View>
+              <Text style={{ color:colors.text, fontWeight:'600' }}>Contact Attempted</Text>
+            </Pressable>
+            
+            <Pressable
+              onPress={saveEmployeeInputs}
+              style={({pressed})=>({
+                backgroundColor: pressed ? '#1976D2' : colors.primary,
+                borderRadius: radii.button,
+                paddingHorizontal: spacing.lg,
+                paddingVertical: spacing.sm,
+                alignItems: 'center'
+              })}
+            >
+              <Text style={{ color:'#fff', fontWeight:'700' }}>Save Info</Text>
+            </Pressable>
+          </View>
+
+          {/* Show existing employee inputs */}
+          {incident?.employeeInputs && Object.keys(incident.employeeInputs).length > 0 && (
+            <View style={{ 
+              backgroundColor: colors.favorite, 
+              padding: spacing.md, 
+              borderRadius: radii.button,
+              borderWidth: 1,
+              borderColor: '#FFCC00'
+            }}>
+              <Text style={{ fontWeight:'700', color:colors.text, marginBottom:spacing.sm }}>
+                Employee Reports
+              </Text>
+              {Object.entries(incident.employeeInputs).map(([uid, inputs]: [string, any]) => (
+                <View key={uid} style={{ marginBottom:spacing.sm }}>
+                  <Text style={{ fontWeight:'600', color:colors.textSecondary }}>
+                    Employee {uid.slice(-4)}:
+                  </Text>
+                  {inputs.etaMins && <Text style={{ color:colors.text }}>• ETA: {inputs.etaMins} minutes</Text>}
+                  {inputs.onSceneReport && <Text style={{ color:colors.text }}>• Report: {inputs.onSceneReport}</Text>}
+                  {inputs.contactAttempted && <Text style={{ color:colors.text }}>• Contact attempted: Yes</Text>}
+                  {inputs.secondaryPhone && <Text style={{ color:colors.text }}>• Secondary: {inputs.secondaryPhone}</Text>}
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      </RoleGate>
+
       {/* Media Actions */}
       <View style={{ paddingHorizontal:spacing.lg, marginBottom:spacing.sm, flexDirection:'row', gap:spacing.md }}>
         <RoleGate allow={['employee','supervisor']}>
@@ -272,7 +482,13 @@ export default function IncidentDetail(){
               if (pick.canceled || !pick.assets?.length) return;
               setUploading(true);
               try {
-                await uploadIncidentMedia(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', pick.assets[0].uri);
+                const mediaUrl = await uploadIncidentMedia(incident.id, (incident.source || 'incidents') as 'incidents'|'alerts', pick.assets[0].uri);
+                // Log to case timeline
+                await logCaseEvent(incident.id, 'media', { 
+                  type: 'photo',
+                  url: mediaUrl,
+                  uploadedBy: user?.uid 
+                });
                 Alert.alert('Uploaded','Photo attached to incident.');
               } catch(e:any){ 
                 Alert.alert('Upload failed', e?.message ?? String(e)); 

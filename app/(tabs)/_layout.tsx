@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TabLayout() {
   return (
@@ -8,6 +9,13 @@ export default function TabLayout() {
         options={{
           title: 'Incidents',
           tabBarIcon: ({ color }) => <span>📋</span>,
+        }}
+      />
+      <Tabs.Screen
+        name="cases"
+        options={{
+          title: 'Cases',
+          tabBarIcon: ({ color }) => <Ionicons name="briefcase" color={color} size={24} />,
         }}
       />
       <Tabs.Screen

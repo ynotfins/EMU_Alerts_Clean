@@ -19,6 +19,15 @@ interface Incident {
     name: string;
     phone: string;
   };
+  employeeInputs?: {
+    [employeeUid: string]: {
+      etaMins?: number;
+      onSceneReport?: string;
+      contactAttempted?: boolean;
+      secondaryPhone?: string;
+      updatedAt: any;
+    };
+  };
   timestamp: any;
   message?: string;
 }

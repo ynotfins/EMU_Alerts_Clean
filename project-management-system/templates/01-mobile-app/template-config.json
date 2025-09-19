@@ -1,0 +1,156 @@
+{
+  "name": "React Native Mobile App",
+  "description": "Professional mobile app with Firebase backend, based on EMU Alerts success",
+  "version": "1.0.0",
+  "category": "mobile",
+  "tags": ["react-native", "firebase", "typescript", "expo"],
+  "difficulty": "intermediate",
+  "estimatedSetupTime": "15-20 minutes",
+  
+  "techStack": {
+    "frontend": {
+      "framework": "Expo React Native",
+      "version": "SDK 54+",
+      "language": "TypeScript",
+      "router": "Expo Router v6",
+      "styling": "React Native StyleSheet + iOS design system",
+      "icons": "@expo/vector-icons"
+    },
+    "backend": {
+      "platform": "Firebase",
+      "database": "Firestore",
+      "auth": "Firebase Auth",
+      "functions": "Cloud Functions",
+      "storage": "Firebase Storage",
+      "hosting": "Firebase Hosting"
+    },
+    "development": {
+      "packageManager": "npm",
+      "testing": "Jest + Detox",
+      "linting": "ESLint + Prettier",
+      "typeChecking": "TypeScript strict mode"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "User authentication (email/password)",
+      "Real-time data synchronization",
+      "Push notifications",
+      "Offline capability",
+      "Cross-platform (iOS/Android/Web)"
+    ],
+    "ui": [
+      "Tab-based navigation",
+      "Professional iOS-style design",
+      "Form inputs and validation",
+      "Loading states and error handling",
+      "Pull-to-refresh functionality"
+    ],
+    "advanced": [
+      "Role-based access control",
+      "File upload and storage",
+      "Location services",
+      "Real-time messaging",
+      "Background processing"
+    ]
+  },
+  
+  "projectStructure": {
+    "app/": "Expo Router screens and layouts",
+    "components/": "Reusable UI components", 
+    "hooks/": "Custom React hooks",
+    "services/": "Business logic and API calls",
+    "types/": "TypeScript type definitions",
+    "ui/": "Design system and theme",
+    "memory-bank/": "Project documentation and context",
+    "functions/": "Firebase Cloud Functions",
+    "credentials/": "Firebase configuration files"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Project Initialization",
+      "commands": [
+        "npx create-expo-app {{projectName}} --template blank-typescript",
+        "cd {{projectName}}",
+        "npm install"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Firebase Setup",
+      "commands": [
+        "npm install firebase",
+        "npx firebase init"
+      ],
+      "manual": [
+        "Create Firebase project in console",
+        "Enable Authentication, Firestore, Storage",
+        "Download configuration files"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Development Dependencies",
+      "commands": [
+        "npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser",
+        "npm install expo-router expo-notifications expo-location",
+        "npm install react-native-maps @react-native-async-storage/async-storage"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Project Structure",
+      "commands": [
+        "mkdir -p app/(tabs) components hooks services types ui memory-bank functions/src",
+        "touch app/_layout.tsx app/(tabs)/_layout.tsx",
+        "touch firebase.config.ts app.config.ts"
+      ]
+    }
+  ],
+  
+  "memoryBankTemplate": {
+    "projectbrief.md": "Mobile app project template based on EMU Alerts patterns",
+    "productContext.md": "Professional mobile application for [INDUSTRY] with real-time features",
+    "techContext.md": "Expo React Native + Firebase + TypeScript stack",
+    "systemPatterns.md": "Tab-based navigation, real-time data, Firebase integration patterns"
+  },
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["develop", "feat/*", "fix/*", "release/*"],
+    "hooks": {
+      "pre-commit": "npm run typecheck && npm run lint",
+      "pre-push": "npm run test"
+    },
+    "ignorePatterns": [
+      "node_modules/",
+      ".expo/",
+      "dist/",
+      "*.log",
+      ".env.local",
+      "ios/",
+      "android/"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "Project name (kebab-case)",
+      "{{displayName}}": "Display name for app",
+      "{{bundleId}}": "iOS/Android bundle identifier", 
+      "{{firebaseProject}}": "Firebase project ID",
+      "{{primaryColor}}": "Main app color theme",
+      "{{industry}}": "Industry/domain for the app"
+    },
+    "options": {
+      "includeAuth": true,
+      "includeNotifications": true,
+      "includeLocation": false,
+      "includeStorage": true,
+      "includeAnalytics": false
+    }
+  }
+}

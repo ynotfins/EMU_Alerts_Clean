@@ -1,0 +1,169 @@
+{
+  "name": "Android Reverse Engineering",
+  "description": "Complete toolkit for Android APK analysis, decompilation, and security research",
+  "version": "1.0.0",
+  "category": "security",
+  "tags": ["android", "reverse-engineering", "apk-analysis", "security", "java", "kotlin"],
+  "difficulty": "advanced",
+  "estimatedSetupTime": "25-30 minutes",
+  
+  "techStack": {
+    "decompilation": {
+      "apktool": "Latest version for APK decoding",
+      "jadx": "Java/Kotlin decompiler", 
+      "dex2jar": "DEX to JAR conversion",
+      "jd-gui": "Java decompiler GUI"
+    },
+    "analysis": {
+      "androguard": "Python framework for Android analysis",
+      "mobsf": "Mobile Security Framework",
+      "apkanalyzer": "Android SDK APK analyzer",
+      "aapt": "Android Asset Packaging Tool"
+    },
+    "tools": {
+      "adb": "Android Debug Bridge",
+      "frida": "Dynamic instrumentation toolkit",
+      "burp": "Web application security testing",
+      "wireshark": "Network protocol analyzer"
+    },
+    "development": {
+      "python": "3.9+",
+      "java": "JDK 11+",
+      "nodejs": "For automation scripts",
+      "docker": "Isolated analysis environments"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "APK decompilation and analysis",
+      "Source code reconstruction", 
+      "Manifest analysis",
+      "Resource extraction",
+      "Certificate analysis"
+    ],
+    "security": [
+      "Vulnerability scanning",
+      "Permission analysis",
+      "Network traffic interception",
+      "Dynamic analysis with Frida",
+      "Malware detection"
+    ],
+    "automation": [
+      "Batch APK processing",
+      "Report generation",
+      "Database of analysis results",
+      "CI/CD integration for security scanning",
+      "Custom analysis workflows"
+    ]
+  },
+  
+  "projectStructure": {
+    "apks/": "Input APK files for analysis",
+    "output/": "Decompiled and analyzed results",
+    "tools/": "Analysis tools and scripts",
+    "reports/": "Generated analysis reports", 
+    "scripts/": "Automation and helper scripts",
+    "configs/": "Tool configurations",
+    "memory-bank/": "Project documentation and findings",
+    "docker/": "Containerized analysis environments"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Java Environment",
+      "commands": [
+        "java -version",
+        "echo $JAVA_HOME"
+      ],
+      "manual": [
+        "Install JDK 11 or later",
+        "Set JAVA_HOME environment variable"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Android SDK",
+      "commands": [
+        "mkdir -p tools/android-sdk",
+        "wget https://dl.google.com/android/repository/commandlinetools-linux-latest.zip",
+        "unzip commandlinetools-linux-latest.zip -d tools/android-sdk/"
+      ],
+      "manual": [
+        "Download Android SDK command line tools",
+        "Set ANDROID_HOME environment variable"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Decompilation Tools",
+      "commands": [
+        "mkdir -p tools/{apktool,jadx,dex2jar}",
+        "wget https://github.com/iBotPeaches/Apktool/releases/latest/download/apktool.jar -P tools/apktool/",
+        "wget https://github.com/skylot/jadx/releases/latest/download/jadx-latest.zip -P tools/jadx/",
+        "unzip tools/jadx/jadx-latest.zip -d tools/jadx/"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Python Analysis Framework",
+      "commands": [
+        "python3 -m venv analysis-env",
+        "source analysis-env/bin/activate",
+        "pip install androguard frida-tools requests beautifulsoup4"
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Project Structure",
+      "commands": [
+        "mkdir -p {apks,output,reports,configs,scripts}",
+        "touch scripts/analyze.py scripts/batch_process.sh",
+        "chmod +x scripts/*.sh"
+      ]
+    }
+  ],
+  
+  "memoryBankTemplate": {
+    "projectbrief.md": "Android reverse engineering project for security analysis and research",
+    "productContext.md": "APK analysis toolkit for security researchers and developers",
+    "techContext.md": "Java/Python toolchain for Android application analysis",
+    "systemPatterns.md": "Decompilation workflows and analysis patterns"
+  },
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["analysis/*", "tools/*", "reports/*"],
+    "hooks": {
+      "pre-commit": "python scripts/validate_configs.py",
+      "pre-push": "python scripts/cleanup_sensitive.py"
+    },
+    "ignorePatterns": [
+      "*.apk",
+      "output/*/",
+      "tools/*/temp/",
+      "*.keystore",
+      "sensitive-data/",
+      "*.log",
+      "analysis-env/"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "Project name for the analysis",
+      "{{targetApp}}": "Primary application being analyzed",
+      "{{analysisType}}": "Type of analysis (security, functionality, malware)",
+      "{{reportFormat}}": "Output format (pdf, html, json)",
+      "{{automationLevel}}": "Level of automation (manual, semi, full)"
+    },
+    "options": {
+      "includeMobSF": false,
+      "includeFrida": true,
+      "includeDocker": true,
+      "includeNetworkAnalysis": true,
+      "includeMalwareDB": false
+    }
+  }
+}

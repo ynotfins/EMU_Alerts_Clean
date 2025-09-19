@@ -1,0 +1,174 @@
+{
+  "name": "Website SEO Optimization",
+  "description": "Complete SEO analysis and optimization toolkit for websites",
+  "version": "1.0.0",
+  "category": "marketing",
+  "tags": ["seo", "website-optimization", "lighthouse", "analytics", "performance"],
+  "difficulty": "beginner",
+  "estimatedSetupTime": "10-15 minutes",
+  
+  "techStack": {
+    "analysis": {
+      "lighthouse": "Google's web performance analyzer",
+      "pagespeed": "PageSpeed Insights API",
+      "gtmetrix": "Website performance monitoring",
+      "semrush": "SEO analysis platform",
+      "ahrefs": "Backlink and keyword analysis"
+    },
+    "tools": {
+      "screaming-frog": "Website crawler",
+      "yoast": "WordPress SEO plugin equivalent",
+      "google-search-console": "Search performance data",
+      "google-analytics": "Website traffic analysis"
+    },
+    "automation": {
+      "nodejs": "16+ for automation scripts",
+      "puppeteer": "Web scraping and testing",
+      "playwright": "Cross-browser automation",
+      "python": "3.9+ for data analysis"
+    },
+    "reporting": {
+      "react": "18+ for dashboard",
+      "d3js": "Data visualization",
+      "chart.js": "Simple charts and graphs",
+      "pdf-kit": "PDF report generation"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "Website performance analysis",
+      "SEO audit and recommendations",
+      "Keyword research and tracking",
+      "Backlink analysis",
+      "Competitor analysis"
+    ],
+    "technical": [
+      "Core Web Vitals monitoring",
+      "Mobile responsiveness testing",
+      "Site structure analysis",
+      "Schema markup validation",
+      "Page speed optimization"
+    ],
+    "content": [
+      "Content gap analysis", 
+      "Keyword density analysis",
+      "Meta tag optimization",
+      "Internal linking suggestions",
+      "Content quality scoring"
+    ],
+    "reporting": [
+      "Automated SEO reports",
+      "Performance dashboards",
+      "Rank tracking over time",
+      "ROI calculation",
+      "Client-ready presentations"
+    ]
+  },
+  
+  "projectStructure": {
+    "analysis/": "Raw analysis data and results",
+    "reports/": "Generated SEO reports",
+    "scripts/": "Automation and analysis scripts",
+    "configs/": "Tool configurations and API keys",
+    "templates/": "Report templates and layouts",
+    "data/": "Historical data and tracking",
+    "dashboard/": "React-based analytics dashboard",
+    "memory-bank/": "Project documentation and insights"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Node.js Environment",
+      "commands": [
+        "node --version",
+        "npm --version",
+        "npm init -y"
+      ],
+      "manual": [
+        "Install Node.js 16 or later",
+        "Ensure npm is available"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "SEO Analysis Tools",
+      "commands": [
+        "npm install lighthouse puppeteer playwright",
+        "npm install axios cheerio csv-parser",
+        "npm install @google-cloud/pagespeed-online"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Reporting Framework",
+      "commands": [
+        "npx create-react-app dashboard --template typescript",
+        "cd dashboard && npm install recharts react-router-dom",
+        "npm install pdfkit canvas jspdf html2canvas"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Python Analysis Tools",
+      "commands": [
+        "python3 -m venv seo-env",
+        "source seo-env/bin/activate", 
+        "pip install requests beautifulsoup4 pandas matplotlib seaborn"
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Configuration Setup",
+      "commands": [
+        "mkdir -p {analysis,reports,configs,data}",
+        "touch configs/api-keys.env configs/lighthouse.json",
+        "touch scripts/analyze-site.js scripts/generate-report.js"
+      ]
+    }
+  ],
+  
+  "memoryBankTemplate": {
+    "projectbrief.md": "SEO optimization project for {{websiteDomain}} performance improvement",
+    "productContext.md": "Website optimization toolkit for improved search rankings and performance",
+    "techContext.md": "Node.js + Python SEO analysis and reporting stack",
+    "systemPatterns.md": "SEO audit workflows and optimization patterns"
+  },
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["analysis/*", "reports/*", "dashboard/*"],
+    "hooks": {
+      "pre-commit": "npm run lint && python scripts/validate_data.py",
+      "pre-push": "npm run test"
+    },
+    "ignorePatterns": [
+      "node_modules/",
+      "seo-env/",
+      "configs/api-keys.env",
+      "data/raw/",
+      "reports/temp/",
+      "*.log",
+      ".env.local",
+      "analysis/screenshots/"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{websiteDomain}}": "Target website domain",
+      "{{clientName}}": "Client or company name",
+      "{{analysisFrequency}}": "How often to run analysis (daily, weekly, monthly)",
+      "{{reportFormat}}": "Preferred report format (pdf, html, dashboard)",
+      "{{competitorUrls}}": "Competitor websites for comparison"
+    },
+    "options": {
+      "includeCompetitorAnalysis": true,
+      "includeDashboard": true,
+      "includeAutomatedReports": true,
+      "includeKeywordTracking": true,
+      "includeBacklinkAnalysis": false
+    }
+  }
+}

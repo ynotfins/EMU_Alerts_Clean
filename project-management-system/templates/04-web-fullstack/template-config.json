@@ -1,0 +1,176 @@
+{
+  "name": "Full-Stack Web Development",
+  "description": "Modern full-stack web application with Next.js, TypeScript, and Supabase",
+  "version": "1.0.0",
+  "category": "web-development",
+  "tags": ["nextjs", "typescript", "supabase", "tailwind", "full-stack"],
+  "difficulty": "intermediate",
+  "estimatedSetupTime": "15-20 minutes",
+  
+  "techStack": {
+    "frontend": {
+      "framework": "Next.js 14+",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS + Shadcn/ui",
+      "state": "Zustand or Redux Toolkit",
+      "forms": "React Hook Form + Zod validation"
+    },
+    "backend": {
+      "platform": "Supabase (PostgreSQL + Auth + Storage)",
+      "api": "Next.js API routes + tRPC",
+      "auth": "Supabase Auth with RLS",
+      "database": "PostgreSQL with Prisma ORM",
+      "storage": "Supabase Storage for files"
+    },
+    "development": {
+      "packageManager": "pnpm",
+      "bundler": "Turbopack (Next.js)",
+      "testing": "Vitest + Playwright",
+      "linting": "ESLint + Prettier + TypeScript",
+      "deployment": "Vercel or Netlify"
+    },
+    "monitoring": {
+      "analytics": "Vercel Analytics or Google Analytics",
+      "errors": "Sentry or Bugsnag", 
+      "performance": "Lighthouse CI",
+      "uptime": "Uptime Robot or Pingdom"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "Server-side rendering (SSR) and static generation (SSG)",
+      "User authentication and authorization",
+      "Real-time data with Supabase subscriptions",
+      "File upload and management",
+      "Responsive design with mobile-first approach"
+    ],
+    "advanced": [
+      "API rate limiting and caching",
+      "Email notifications and templates",
+      "Payment processing (Stripe integration)",
+      "Multi-tenant architecture support",
+      "Internationalization (i18n)"
+    ],
+    "developer": [
+      "Hot module replacement",
+      "TypeScript strict mode",
+      "Automated testing pipeline",
+      "Code generation and scaffolding",
+      "Performance monitoring and optimization"
+    ]
+  },
+  
+  "projectStructure": {
+    "src/": "Source code directory",
+    "src/app/": "Next.js 14 App Router pages",
+    "src/components/": "Reusable React components",
+    "src/lib/": "Utilities, database, and API functions",
+    "src/hooks/": "Custom React hooks",
+    "src/types/": "TypeScript type definitions",
+    "src/styles/": "Global styles and Tailwind config",
+    "public/": "Static assets and images",
+    "prisma/": "Database schema and migrations",
+    "tests/": "Test files and utilities",
+    "memory-bank/": "Project documentation"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Next.js Project",
+      "commands": [
+        "npx create-next-app@latest {{projectName}} --typescript --tailwind --eslint --app --src-dir",
+        "cd {{projectName}}",
+        "pnpm install"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Supabase Setup",
+      "commands": [
+        "pnpm add @supabase/supabase-js @supabase/ssr",
+        "npx supabase init",
+        "npx supabase start"
+      ],
+      "manual": [
+        "Create Supabase project at https://supabase.com",
+        "Copy project URL and anon key to .env.local"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Development Tools",
+      "commands": [
+        "pnpm add prisma @prisma/client",
+        "pnpm add zod react-hook-form @hookform/resolvers",
+        "pnpm add zustand @tanstack/react-query",
+        "pnpm add lucide-react @radix-ui/react-slot"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "UI Components",
+      "commands": [
+        "npx shadcn-ui@latest init",
+        "npx shadcn-ui@latest add button form input label card"
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Testing Setup",
+      "commands": [
+        "pnpm add -D vitest @vitejs/plugin-react jsdom",
+        "pnpm add -D @playwright/test",
+        "pnpm add -D @testing-library/react @testing-library/jest-dom"
+      ]
+    }
+  ],
+  
+  "memoryBankTemplate": {
+    "projectbrief.md": "Full-stack web application for {{industry}} with modern React ecosystem",
+    "productContext.md": "Professional web platform with authentication, database, and real-time features",
+    "techContext.md": "Next.js + Supabase + TypeScript modern web stack",
+    "systemPatterns.md": "SSR/SSG patterns, database design, and API architecture"
+  },
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["develop", "feature/*", "fix/*", "release/*"],
+    "hooks": {
+      "pre-commit": "pnpm run type-check && pnpm run lint",
+      "pre-push": "pnpm run test && pnpm run build"
+    },
+    "ignorePatterns": [
+      "node_modules/",
+      ".next/",
+      "out/",
+      "dist/",
+      ".env.local",
+      ".env.production",
+      "*.log",
+      ".vercel/",
+      "coverage/",
+      "playwright-report/"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "Project name (kebab-case)",
+      "{{displayName}}": "Human-readable project name", 
+      "{{industry}}": "Industry or domain for the application",
+      "{{databaseUrl}}": "Supabase database URL",
+      "{{supabaseKey}}": "Supabase anon public key",
+      "{{primaryColor}}": "Primary brand color (hex)"
+    },
+    "options": {
+      "includeAuth": true,
+      "includePayments": false,
+      "includeFileUploads": true,
+      "includeEmailNotifications": false,
+      "includeAnalytics": true,
+      "includeI18n": false
+    }
+  }
+}

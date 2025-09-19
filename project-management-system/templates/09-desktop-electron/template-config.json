@@ -1,0 +1,38 @@
+{
+  "name": "Desktop Electron App",
+  "description": "Cross-platform desktop application with Electron, React, and TypeScript",
+  "version": "1.0.0",
+  "category": "desktop",
+  "tags": ["electron", "react", "typescript", "desktop", "cross-platform"],
+  "difficulty": "intermediate",
+  "estimatedSetupTime": "20-25 minutes",
+  
+  "techStack": {
+    "core": {
+      "electron": "Latest",
+      "react": "18+",
+      "typescript": "5.0+",
+      "webpack": "5.0+"
+    },
+    "ui": {
+      "electron-builder": "Packaging",
+      "electron-updater": "Auto updates",
+      "react-router": "Navigation"
+    }
+  },
+  
+  "features": [
+    "Cross-platform desktop app",
+    "React-based UI",
+    "File system access",
+    "Native menus and dialogs",
+    "Auto-updater integration",
+    "System tray support"
+  ],
+  
+  "customization": {
+    "variables": {
+      "{{appName}}": "Desktop app name"
+    }
+  }
+}

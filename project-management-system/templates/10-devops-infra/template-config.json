@@ -1,0 +1,49 @@
+{
+  "name": "DevOps Infrastructure",
+  "description": "Complete DevOps setup with Docker, Kubernetes, CI/CD, and monitoring",
+  "version": "1.0.0",
+  "category": "infrastructure",
+  "tags": ["docker", "kubernetes", "terraform", "cicd", "monitoring"],
+  "difficulty": "advanced",
+  "estimatedSetupTime": "40-60 minutes",
+  
+  "techStack": {
+    "containerization": {
+      "docker": "Latest",
+      "docker-compose": "Multi-container apps",
+      "kubernetes": "Container orchestration"
+    },
+    "infrastructure": {
+      "terraform": "Infrastructure as code",
+      "ansible": "Configuration management",
+      "vagrant": "Development environments"
+    },
+    "cicd": {
+      "github-actions": "CI/CD pipeline",
+      "jenkins": "Alternative CI/CD",
+      "gitlab-ci": "GitLab integration"
+    },
+    "monitoring": {
+      "prometheus": "Metrics collection",
+      "grafana": "Visualization",
+      "elk-stack": "Logging"
+    }
+  },
+  
+  "features": [
+    "Docker containerization",
+    "Kubernetes deployment",
+    "Infrastructure as Code",
+    "CI/CD pipelines",
+    "Monitoring and alerting",
+    "Log aggregation",
+    "Security scanning"
+  ],
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "Infrastructure project name",
+      "{{cloudProvider}}": "AWS/GCP/Azure"
+    }
+  }
+}

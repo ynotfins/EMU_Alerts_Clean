@@ -3,9 +3,13 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'expo-router/babel',
-      ['module-resolver', { alias: { '@': './' }, extensions: ['.tsx','.ts','.js','.jsx','.json'] }],
-      'react-native-reanimated/plugin' // keep last
+      // remove 'expo-router/babel'
+      ['module-resolver', {
+        alias: { '@': './' },
+        extensions: ['.tsx', '.ts', '.js', '.jsx', '.json']
+      }],
+      // Reanimated moved here in RN 0.76 / Expo 54
+      'react-native-worklets/plugin' // keep last
     ],
   };
 };

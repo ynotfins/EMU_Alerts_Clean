@@ -1,0 +1,58 @@
+{
+  "name": "WordPress Custom Development",
+  "description": "Custom WordPress theme and plugin development environment",
+  "version": "1.0.0",
+  "category": "cms",
+  "tags": ["wordpress", "php", "mysql", "custom-theme", "plugins"],
+  "difficulty": "beginner",
+  "estimatedSetupTime": "10-15 minutes",
+  
+  "techStack": {
+    "core": {
+      "wordpress": "6.3+",
+      "php": "8.1+",
+      "mysql": "8.0+",
+      "apache": "2.4+ or Nginx"
+    },
+    "development": {
+      "composer": "PHP dependency management",
+      "wp-cli": "WordPress command line",
+      "local": "Local development environment",
+      "sass": "CSS preprocessing"
+    },
+    "build": {
+      "webpack": "Asset bundling",
+      "babel": "JavaScript transpilation",
+      "browsersync": "Live reloading",
+      "imagemin": "Image optimization"
+    }
+  },
+  
+  "features": [
+    "Custom theme development",
+    "Plugin creation and customization", 
+    "Advanced Custom Fields integration",
+    "WooCommerce compatibility",
+    "Gutenberg block development",
+    "REST API customization",
+    "Performance optimization"
+  ],
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Local WordPress",
+      "commands": [
+        "wp core download",
+        "wp config create --dbname={{dbName}} --dbuser={{dbUser}}"
+      ]
+    }
+  ],
+  
+  "customization": {
+    "variables": {
+      "{{themeName}}": "Custom theme name",
+      "{{dbName}}": "Database name"
+    }
+  }
+}

@@ -11,14 +11,14 @@ function readIOSBundleIdFromPlist() {
   }
 }
 
-export default ({ config }) => ({
+export default ({ config }: any) => ({
   expo: {
     name: process.env.EXPO_PUBLIC_APP_NAME ?? "EMU Alerts",
     slug: process.env.EXPO_PUBLIC_APP_SLUG ?? "emualerts",
     scheme: "emualerts",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/helmet-icon.png",
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     plugins: [
       ["expo-notifications"]
@@ -41,7 +41,7 @@ export default ({ config }) => ({
         "ACCESS_FINE_LOCATION","ACCESS_COARSE_LOCATION"
       ]
     },
-    web: { bundler: "metro", favicon: "./assets/images/favicon.png" },
+    web: { bundler: "metro", favicon: "./assets/favicon.png" },
     notification: { iosDisplayInForeground: true },
     experiments: { typedRoutes: true },
     updates: { fallbackToCacheTimeout: 0 },

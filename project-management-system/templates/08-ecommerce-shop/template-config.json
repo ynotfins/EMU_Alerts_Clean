@@ -1,0 +1,47 @@
+{
+  "name": "E-commerce Platform",
+  "description": "Complete e-commerce solution with Next.js, Stripe, and inventory management",
+  "version": "1.0.0",
+  "category": "e-commerce",
+  "tags": ["nextjs", "stripe", "e-commerce", "inventory", "payments"],
+  "difficulty": "advanced",
+  "estimatedSetupTime": "30-40 minutes",
+  
+  "techStack": {
+    "frontend": {
+      "nextjs": "14+",
+      "typescript": "5.0+",
+      "tailwind": "3.0+",
+      "shadcn": "UI components"
+    },
+    "backend": {
+      "supabase": "Database and auth",
+      "stripe": "Payment processing",
+      "resend": "Email notifications"
+    },
+    "features": {
+      "cart": "Shopping cart management",
+      "inventory": "Stock tracking",
+      "orders": "Order management",
+      "admin": "Admin dashboard"
+    }
+  },
+  
+  "features": [
+    "Product catalog with categories",
+    "Shopping cart and checkout",
+    "Stripe payment integration",
+    "Order management system",
+    "Inventory tracking",
+    "User accounts and profiles",
+    "Admin dashboard",
+    "Email notifications"
+  ],
+  
+  "customization": {
+    "variables": {
+      "{{storeName}}": "Store name",
+      "{{stripeKey}}": "Stripe publishable key"
+    }
+  }
+}

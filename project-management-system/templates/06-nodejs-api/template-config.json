@@ -1,0 +1,146 @@
+{
+  "name": "Node.js API Backend",
+  "description": "RESTful API backend with Express, TypeScript, and database integration",
+  "version": "1.0.0",
+  "category": "backend",
+  "tags": ["nodejs", "express", "typescript", "api", "postgresql", "redis"],
+  "difficulty": "intermediate",
+  "estimatedSetupTime": "15-20 minutes",
+  
+  "techStack": {
+    "runtime": {
+      "nodejs": "18+ LTS",
+      "typescript": "5.0+",
+      "express": "4.18+",
+      "fastify": "Alternative high-performance framework"
+    },
+    "database": {
+      "postgresql": "Primary database",
+      "prisma": "Database ORM and migrations",
+      "redis": "Caching and sessions",
+      "mongodb": "Optional document database"
+    },
+    "auth": {
+      "jsonwebtoken": "JWT token authentication",
+      "bcrypt": "Password hashing",
+      "passport": "Authentication middleware",
+      "oauth2": "Social login integration"
+    },
+    "validation": {
+      "zod": "Runtime type validation",
+      "joi": "Alternative validation library",
+      "express-validator": "Express-specific validation",
+      "helmet": "Security middleware"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "RESTful API with Express/Fastify",
+      "TypeScript with strict mode",
+      "Database integration with Prisma",
+      "JWT authentication and authorization",
+      "Input validation and sanitization"
+    ],
+    "advanced": [
+      "Rate limiting and throttling",
+      "API versioning",
+      "Background job processing",
+      "File upload and storage",
+      "WebSocket real-time features"
+    ],
+    "deployment": [
+      "Docker containerization",
+      "Health check endpoints",
+      "Graceful shutdown handling",
+      "Environment-based configuration",
+      "CI/CD pipeline integration"
+    ]
+  },
+  
+  "projectStructure": {
+    "src/": "Source code directory",
+    "src/routes/": "API route handlers",
+    "src/controllers/": "Business logic controllers", 
+    "src/models/": "Database models and schemas",
+    "src/middleware/": "Custom middleware functions",
+    "src/utils/": "Utility functions and helpers",
+    "src/config/": "Configuration and environment setup",
+    "tests/": "Unit and integration tests",
+    "prisma/": "Database schema and migrations",
+    "memory-bank/": "Project documentation"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Node.js Project",
+      "commands": [
+        "npm init -y",
+        "npm install express cors helmet morgan compression",
+        "npm install -D typescript @types/node @types/express nodemon"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "TypeScript Configuration",
+      "commands": [
+        "npx tsc --init",
+        "mkdir -p src/{routes,controllers,models,middleware,utils,config}",
+        "touch src/index.ts src/app.ts"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Database Setup",
+      "commands": [
+        "npm install prisma @prisma/client",
+        "npm install bcrypt jsonwebtoken zod",
+        "npm install -D @types/bcrypt @types/jsonwebtoken"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Testing Framework",
+      "commands": [
+        "npm install -D jest supertest @types/jest @types/supertest",
+        "mkdir tests && touch tests/setup.ts"
+      ]
+    }
+  ],
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["develop", "feature/*", "fix/*"],
+    "hooks": {
+      "pre-commit": "npm run type-check && npm run lint",
+      "pre-push": "npm run test"
+    },
+    "ignorePatterns": [
+      "node_modules/",
+      "dist/",
+      "build/",
+      ".env*",
+      "*.log",
+      "coverage/",
+      "prisma/dev.db"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "API project name",
+      "{{apiVersion}}": "API version (v1, v2, etc.)",
+      "{{databaseUrl}}": "Database connection URL",
+      "{{jwtSecret}}": "JWT signing secret",
+      "{{port}}": "Server port number"
+    },
+    "options": {
+      "includeAuth": true,
+      "includeRateLimit": true,
+      "includeFileUpload": false,
+      "includeWebSocket": false,
+      "includeRedis": true
+    }
+  }
+}

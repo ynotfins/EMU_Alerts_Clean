@@ -2,7 +2,6 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, initializeAuth } from 'firebase/auth';
-import { getReactNativePersistence } from 'firebase/auth/react-native';
 import { getFirestore } from 'firebase/firestore';
 
 // ---- Config from .env (expo reads EXPO_PUBLIC_* on boot) ----
@@ -18,18 +17,8 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-// Auth: RN uses initializeAuth + AsyncStorage; Web uses getAuth()
-let auth;
-if (Platform.OS === 'web') {
-  auth = getAuth(app);
-} else {
-  try {
-    auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
-  } catch {
-    // initializeAuth throws if already created; fall back to existing instance
-    auth = getAuth(app);
-  }
-}
+// Auth: For managed Expo, just use getAuth - persistence is handled automatically
+const auth = getAuth(app);
 
 const db = getFirestore(app);
 

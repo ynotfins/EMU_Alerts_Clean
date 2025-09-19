@@ -1,0 +1,148 @@
+{
+  "name": "Python Data Science",
+  "description": "Complete data science environment with Jupyter, ML libraries, and visualization tools",
+  "version": "1.0.0",
+  "category": "data-science",
+  "tags": ["python", "jupyter", "pandas", "scikit-learn", "tensorflow", "data-analysis"],
+  "difficulty": "intermediate",
+  "estimatedSetupTime": "20-25 minutes",
+  
+  "techStack": {
+    "core": {
+      "python": "3.10+",
+      "jupyter": "Jupyter Lab for interactive development",
+      "pandas": "Data manipulation and analysis",
+      "numpy": "Numerical computing",
+      "matplotlib": "Data visualization",
+      "seaborn": "Statistical data visualization"
+    },
+    "ml": {
+      "scikit-learn": "Machine learning library",
+      "tensorflow": "Deep learning framework",
+      "pytorch": "Alternative deep learning framework",
+      "xgboost": "Gradient boosting framework",
+      "lightgbm": "Gradient boosting machine"
+    },
+    "data": {
+      "requests": "HTTP library for API calls",
+      "beautifulsoup4": "Web scraping",
+      "sqlalchemy": "Database toolkit",
+      "psycopg2": "PostgreSQL adapter",
+      "pymongo": "MongoDB driver"
+    },
+    "visualization": {
+      "plotly": "Interactive plotting",
+      "bokeh": "Interactive visualization",
+      "altair": "Statistical visualization",
+      "streamlit": "Web app framework for ML"
+    }
+  },
+  
+  "features": {
+    "core": [
+      "Jupyter Lab environment with extensions",
+      "Data cleaning and preprocessing pipelines",
+      "Exploratory data analysis templates",
+      "Statistical analysis and hypothesis testing",
+      "Machine learning model development"
+    ],
+    "advanced": [
+      "Deep learning with GPU support",
+      "Time series analysis and forecasting",
+      "Natural language processing",
+      "Computer vision projects",
+      "A/B testing frameworks"
+    ],
+    "deployment": [
+      "Model serving with FastAPI",
+      "Streamlit dashboards",
+      "Docker containers for reproducibility",
+      "MLflow experiment tracking",
+      "Automated model training pipelines"
+    ]
+  },
+  
+  "projectStructure": {
+    "notebooks/": "Jupyter notebooks for analysis",
+    "data/": "Raw and processed datasets",
+    "src/": "Python modules and utilities",
+    "models/": "Trained models and artifacts",
+    "reports/": "Generated analysis reports",
+    "tests/": "Unit tests for data processing",
+    "config/": "Configuration files",
+    "memory-bank/": "Project documentation"
+  },
+  
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Python Environment",
+      "commands": [
+        "python3 -m venv data-env",
+        "source data-env/bin/activate",
+        "pip install --upgrade pip setuptools wheel"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Core Data Science Libraries",
+      "commands": [
+        "pip install jupyter pandas numpy matplotlib seaborn",
+        "pip install scikit-learn scipy statsmodels",
+        "pip install plotly bokeh altair streamlit"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Machine Learning Libraries",
+      "commands": [
+        "pip install tensorflow torch torchvision",
+        "pip install xgboost lightgbm catboost",
+        "pip install mlflow wandb optuna"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Jupyter Extensions",
+      "commands": [
+        "pip install jupyterlab-git jupyter-dash",
+        "jupyter labextension install @jupyter-widgets/jupyterlab-manager"
+      ]
+    }
+  ],
+  
+  "gitConfig": {
+    "initialBranch": "main",
+    "branches": ["analysis/*", "experiments/*", "models/*"],
+    "hooks": {
+      "pre-commit": "jupyter nbconvert --clear-output --inplace notebooks/*.ipynb",
+      "pre-push": "python -m pytest tests/"
+    },
+    "ignorePatterns": [
+      "data-env/",
+      "*.pyc",
+      "__pycache__/",
+      ".jupyter/",
+      "data/raw/",
+      "models/*.pkl",
+      "*.log",
+      ".ipynb_checkpoints/"
+    ]
+  },
+  
+  "customization": {
+    "variables": {
+      "{{projectName}}": "Data science project name",
+      "{{dataSource}}": "Primary data source or domain",
+      "{{analysisType}}": "Type of analysis (classification, regression, clustering, etc.)",
+      "{{targetVariable}}": "Main variable to predict or analyze"
+    },
+    "options": {
+      "includeDeepLearning": true,
+      "includeNLP": false,
+      "includeComputerVision": false,
+      "includeStreamlit": true,
+      "includeMLflow": true
+    }
+  }
+}

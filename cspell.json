@@ -22,7 +22,17 @@
     "precommit",
     "APPINVITE",
     "SIGNIN",
-    "GCM"
+    "GCM",
+    "chatbubbles",
+    "Dade",
+    "Brickell",
+    "Hillsborough",
+    "Mabry",
+    "Duval",
+    "Heckscher",
+    "Broward",
+    "Olas",
+    "Intracoastal"
   ],
   "ignorePaths": [
     "node_modules/**",

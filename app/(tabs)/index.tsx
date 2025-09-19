@@ -67,7 +67,7 @@ export default function IncidentsScreen() {
           title: 'EMU Alerts Test', 
           body: 'Test local notification - notifications are working! 🚨' 
         },
-        trigger: { seconds: 5 },
+        trigger: { seconds: 5 } as any,
       });
       Alert.alert('Test Scheduled', 'You should see a notification in 5 seconds!');
     } catch (error) {

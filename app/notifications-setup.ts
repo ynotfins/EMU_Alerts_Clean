@@ -8,6 +8,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -106,7 +108,7 @@ export async function scheduleLocalNotification(
         sound: 'default',
         priority: 'high',
       },
-      trigger: delay > 0 ? { seconds: delay } : null,
+      trigger: delay > 0 ? ({ seconds: delay } as any) : null,
     });
 
     return notificationId;
@@ -242,5 +244,5 @@ export function addNotificationResponseReceivedListener(
 export function removeNotificationSubscription(
   subscription: Notifications.Subscription
 ) {
-  Notifications.removeNotificationSubscription(subscription);
+  subscription.remove();
 }

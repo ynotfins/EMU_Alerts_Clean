@@ -1,0 +1,45 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "winget",
+    "pwsh",
+    "powershell",
+    "WinGet",
+    "PowerShell",
+    "microsoft",
+    "Microsoft",
+    "admin",
+    "cmdlet",
+    "cmdlets",
+    "param",
+    "params",
+    "env",
+    "foreach",
+    "ErrorActionPreference",
+    "LASTEXITCODE",
+    "WindowsIdentity",
+    "WindowsPrincipal",
+    "WindowsBuiltInRole",
+    "PSVersionTable",
+    "exe",
+    "silentlycontinue",
+    "SilentlyContinue",
+    "programfiles",
+    "ProgramFiles",
+    "machinekey",
+    "userkey",
+    "systempath",
+    "newpath"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    "*.min.js",
+    "*.map"
+  ],
+  "ignoreWords": [
+    "LASTEXITCODE",
+    "ErrorActionPreference"
+  ]
+}

@@ -1,50 +1,76 @@
 # Product Context: EMU Alerts Clean
 
 ## Why This Project Exists
-The EMU Alerts Clean project exists to provide a modern, reliable alert notification system. This could be addressing:
-- Legacy alert system that needs replacement
-- New requirements for emergency or general notifications
-- Need for better alert management and delivery
+The EMU Alerts Clean project exists to provide a modern, mobile-first emergency alert system for EMU (Emergency Management University) campus safety. This addresses the critical need for:
+- Real-time emergency notification delivery to mobile devices
+- Cross-platform accessibility for diverse user base
+- Reliable incident tracking and communication
+- Modern user experience for emergency management
 
 ## Problems It Solves
-### Current State Issues (Assumptions)
-- Outdated alert system infrastructure
-- Unreliable notification delivery
-- Poor user experience for managing alerts
-- Lack of modern alert distribution methods
+### Target User Problems
+- **Students & Staff**: Need immediate, reliable emergency notifications on their mobile devices
+- **Emergency Personnel**: Require real-time incident management and communication tools
+- **Campus Safety**: Need efficient alert distribution and incident tracking
 
-### Target Improvements
-- **Reliability**: Ensure alerts reach recipients consistently
-- **Modern Interface**: User-friendly alert management
-- **Scalability**: Handle varying alert volumes
-- **Multi-channel**: Support various notification methods (email, SMS, push, etc.)
+### Solution Approach
+- **Mobile-First**: Native mobile app for instant notifications
+- **Real-Time**: Firebase-powered live updates and messaging
+- **Cross-Platform**: Works on iOS, Android, and Web
+- **User-Friendly**: Intuitive interface for emergency scenarios
 
-## How It Should Work
+## How It Works
 ### Core User Flows
-1. **Alert Creation**: Authorized users create alerts with proper targeting
-2. **Alert Distribution**: System delivers alerts via appropriate channels
-3. **Alert Management**: Users can view, modify, and track alerts
-4. **Notification Preferences**: Recipients can manage their notification settings
+1. **Emergency Alert Reception**: Users receive push notifications for incidents
+2. **Incident Tracking**: Real-time updates on active incidents with timeline
+3. **Authentication**: Secure sign-in with Firebase Auth
+4. **Multi-Platform Access**: Consistent experience across mobile and web
 
-### Key Features (Proposed)
-- Alert composition and formatting
-- Recipient management and targeting
-- Multiple delivery channels
-- Alert scheduling and prioritization
-- Delivery tracking and reporting
-- Emergency alert capabilities
+### Key Features Implemented
+- **Real-Time Alerts**: Live incident notifications with severity levels (low/medium/high/critical)
+- **Incident Management**: Detailed incident tracking with update history
+- **Push Notifications**: Critical emergency alerts sent directly to devices
+- **Location Awareness**: Incident location tracking and affected area mapping
+- **Timeline View**: Chronological incident updates and status changes
+- **Cross-Platform**: iOS, Android, and Web support via React Native/Expo
 
-## User Experience Goals
-- **Simplicity**: Easy to create and manage alerts
-- **Speed**: Quick alert creation and delivery
-- **Reliability**: Consistent delivery and tracking
-- **Accessibility**: Works across devices and platforms
-- **Control**: Fine-grained notification preferences
+## User Experience Design
+### Mobile-First Approach
+- **Instant Access**: Push notifications bring users directly to relevant incidents
+- **Emergency Colors**: High-contrast red theme for emergency visibility
+- **Simple Navigation**: Tab-based interface for quick access
+- **Offline Support**: Critical data cached for emergency scenarios
 
-## Success Metrics
-- Alert delivery success rate (>99%)
-- Time to delivery (< 5 minutes for urgent alerts)
-- User adoption and satisfaction
-- System uptime and reliability
+### User Types
+- **General Users**: Students, staff, visitors receiving alerts
+- **Emergency Personnel**: Creating and managing incident responses
+- **Administrators**: System configuration and user management
 
-*Last Updated: September 18, 2025*
+## Technical Implementation
+### Architecture
+- **Frontend**: React Native with Expo Router
+- **Backend**: Firebase (Firestore, Auth, Cloud Messaging)
+- **Real-Time**: Firestore real-time listeners for live updates
+- **Notifications**: Expo Notifications with Firebase Cloud Messaging
+
+### Data Model
+- **Incidents**: Core alert data with severity, status, location, timeline
+- **Users**: Authentication and notification preferences
+- **Updates**: Real-time incident status changes and communications
+
+## Success Metrics (Achieved)
+- ✅ Cross-platform mobile app deployed
+- ✅ Real-time notification system operational
+- ✅ Firebase integration complete
+- ✅ Authentication flow implemented
+- ✅ Incident management system working
+- 🔄 Production deployment and user adoption pending
+
+## Next Phase Goals
+- Production Firebase configuration
+- App store deployment
+- Integration with existing EMU systems
+- Security hardening and compliance
+- Performance optimization for emergency scenarios
+
+*Last Updated: September 19, 2025*

@@ -1,99 +1,146 @@
 # Technical Context: EMU Alerts Clean
 
-## Technology Stack
-*To be determined based on requirements*
+## Technology Stack (Implemented)
 
-### Current Status
-- **Repository**: Fresh Git repository initialized
-- **Environment**: Linux development environment
-- **Package Manager**: pnpm preferred (based on user preferences)
-- **Build Tools**: Turbopack preferred for Next.js projects
+### Current Implementation
+- **Platform**: React Native with Expo SDK 54
+- **Backend**: Firebase (Firestore, Auth, Cloud Messaging)
+- **Development Environment**: Linux development environment
+- **Package Manager**: npm (with package-lock.json in place)
+- **Language**: TypeScript with strict type checking
 
-### Technology Considerations
+### Core Technologies
 
-#### Backend Options
-- **Node.js + Express/Fastify**: Rapid development, good ecosystem
-- **Next.js API Routes**: Full-stack solution with React
-- **Python + FastAPI**: Strong for data processing and APIs
-- **Java Spring Boot**: Enterprise-grade, good for university environments
+#### Frontend Stack
+- **React Native**: Cross-platform mobile development
+- **Expo Router**: File-based navigation system
+- **Expo SDK**: Comprehensive development platform
+- **TypeScript**: Type safety and developer experience
+- **Expo Vector Icons**: Icon library for UI components
 
-#### Frontend Options
-- **Next.js + React**: Modern, fast development with Turbopack
-- **React SPA**: Client-side application
-- **Vue.js**: Alternative modern framework
-- **Server-side rendered**: For better SEO and performance
-
-#### Database Options
-- **PostgreSQL**: Reliable relational database for complex queries
-- **MongoDB**: Flexible document storage
-- **SQLite**: Simple setup for development/small scale
-- **MySQL**: Common in university environments
-
-#### Notification Services
-- **SendGrid/Mailgun**: Email delivery
-- **Twilio**: SMS notifications
+#### Backend Services
+- **Firebase Firestore**: Real-time NoSQL database
+- **Firebase Auth**: User authentication with email/password
 - **Firebase Cloud Messaging**: Push notifications
-- **Amazon SNS**: Multi-channel notifications
+- **Firebase Analytics**: Usage tracking and insights
+
+#### Development Tools
+- **Expo CLI**: Development server and build tools
+- **React Native Reanimated**: Smooth animations
+- **React Native Gesture Handler**: Touch gesture management
+- **React Native Maps**: Location and mapping features
+- **AsyncStorage**: Local data persistence
 
 ## Development Setup
 
 ### Current Environment
 - **OS**: Linux 6.12.8+
 - **Shell**: /usr/bin/bash
-- **Git**: Repository initialized and clean
+- **Node.js**: 18+ required
 - **Working Directory**: /workspace
+- **Git**: Repository with active development
 
-### Development Tools (Preferences)
-- **Package Manager**: pnpm
-- **Build Tool**: Turbopack (for Next.js)
-- **Testing**: Vitest (run before pushing changes)
-- **Code Quality**: Linting and formatting tools
-- **Agent Mode**: Terminal commands run automatically
+### Build Configuration
+- **Expo Config**: `app.config.ts` with EAS project ID
+- **TypeScript**: `tsconfig.json` with strict settings
+- **Babel**: Custom module resolution configuration
+- **EAS Build**: Production build system configured
 
-### Installation Standards
-- Use non-interactive flags (-y)
-- Apply sensible defaults
-- Always run tests before pushing changes
-- Iterate until tests are green
+### Dependencies (Implemented)
+```json
+{
+  "expo": "^54.0.0",
+  "react": "19.1.0",
+  "react-native": "0.81.4",
+  "firebase": "^10.14.1",
+  "expo-router": "~6.0.6",
+  "expo-notifications": "~0.32.11",
+  "react-native-maps": "1.20.1",
+  "typescript": "^5.9.2"
+}
+```
 
-## Technical Constraints
+## Architecture Implementation
 
-### Requirements (Assumed)
-- **Reliability**: High availability for emergency alerts
-- **Scalability**: Handle varying alert volumes
-- **Security**: Protect user data and prevent spam
-- **Performance**: Fast alert delivery (< 5 minutes urgent)
-- **Maintainability**: Clean, documented codebase
+### App Structure
+```
+app/
+├─ _layout.tsx              # Root navigation layout
+├─ (tabs)/                  # Tab navigation group
+│  ├─ _layout.tsx          # Tab layout configuration
+│  ├─ index.tsx            # Incidents list (home)
+│  ├─ favorites.tsx        # Favorites screen
+│  ├─ chat.tsx             # Emergency chat
+│  └─ profile.tsx          # User profile
+├─ (auth)/
+│  └─ login.tsx            # Authentication screen
+├─ incident/
+│  └─ [id].tsx             # Dynamic incident details
+└─ notifications-setup.ts   # Push notification config
+```
 
-### Integration Constraints
-- May need integration with EMU systems
-- Authentication requirements (LDAP, SSO)
-- Compliance requirements (FERPA, etc.)
-- Network/firewall considerations
+### Data Layer
+- **Firestore Collections**: `incidents` with real-time listeners
+- **Authentication**: Firebase Auth with AsyncStorage persistence
+- **Local Storage**: AsyncStorage for offline data and preferences
+- **Real-Time Updates**: Firestore real-time listeners for live data
 
-## Dependencies
-*To be defined as technology stack is chosen*
+### Custom Hooks
+- **useAuth**: Authentication state management
+- **useIncidents**: Real-time incidents data fetching
+- **useIncident**: Individual incident details management
 
-### Core Dependencies (Planned)
-- Web framework
-- Database driver/ORM
-- Authentication library
-- Notification service SDKs
-- Testing framework
-- Build and deployment tools
+## Technical Constraints (Actual)
 
-### Development Dependencies
-- Linting tools (ESLint, etc.)
-- Code formatting (Prettier)
-- Type checking (TypeScript if chosen)
-- Testing utilities
-- Development servers
+### Performance Requirements
+- **Real-Time Updates**: Sub-second incident updates via Firestore
+- **Push Notifications**: Immediate delivery for critical alerts
+- **Offline Support**: Critical data cached locally
+- **Cross-Platform**: Consistent performance on iOS/Android/Web
 
-## Deployment Considerations
-- **Environment**: TBD (cloud vs on-premise)
-- **CI/CD**: Automated testing and deployment
-- **Monitoring**: Application and alert delivery monitoring
-- **Backup**: Database and configuration backup
-- **Scaling**: Horizontal scaling for high loads
+### Security Implementation
+- **Firebase Auth**: Secure authentication with persistence
+- **Firestore Rules**: Database security (development mode active)
+- **Environment Variables**: Sensitive config in `.env` files
+- **Platform Security**: Native app security features
 
-*Last Updated: September 18, 2025*
+### Integration Points
+- **Firebase Services**: Fully integrated backend
+- **Push Notifications**: Expo Notifications + Firebase Cloud Messaging
+- **Maps Integration**: React Native Maps for location features
+- **Cross-Platform**: Expo managed workflow for deployment
+
+## Deployment Configuration
+
+### Environment Setup
+- **Firebase Project**: Development project configured
+- **EAS Project**: `b40c82be-f4b7-4f9a-8fa1-b0126cb45366`
+- **Environment Variables**: Firebase config via EXPO_PUBLIC_* vars
+- **Credentials**: Firebase config files in credentials/ (gitignored)
+
+### Build Targets
+- **iOS**: Native iOS app via EAS Build
+- **Android**: Native Android app via EAS Build
+- **Web**: Progressive Web App via Expo Web
+
+### CI/CD Ready
+- **EAS Build**: Production build system configured
+- **EAS Submit**: App store submission ready
+- **Over-the-Air Updates**: Expo OTA update capability
+- **Environment Management**: Development/staging/production configs
+
+## Development Workflow
+
+### Current Standards
+- **TypeScript**: Strict type checking enabled
+- **Code Quality**: ESLint configuration (if present)
+- **Testing**: Jest configuration for unit tests
+- **Development**: Expo development server with hot reload
+
+### Production Readiness
+- **Security**: Production Firebase project needed
+- **Performance**: Optimization for emergency scenarios
+- **Monitoring**: Error tracking and analytics setup
+- **Compliance**: Privacy and security audit required
+
+*Last Updated: September 19, 2025*

@@ -78,15 +78,27 @@ export default function IncidentsScreen() {
   // DEV ONLY: Test Firestore write function
   async function writeTestIncident() {
     try {
+      // Check if we're in demo mode
+      const isDemoMode = !process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
+      
+      if (isDemoMode) {
+        Alert.alert('Demo Mode', 'Test incident creation simulated successfully! In production, this would write to Firestore.');
+        return;
+      }
+
       const ref = await addDoc(collection(db, 'incidents'), {
         alertId: 'ALERT-TEST-' + Math.floor(Math.random()*100000),
         timestamp: serverTimestamp(),
-        alertType: 'Test Alert',
-        state: 'MI', county: 'Washtenaw', city: 'Ypsilanti',
-        address: '123 Main St',
-        message: 'This is a test incident from the device.',
-        status: 'active', priority: 'medium',
-        coordinates: { latitude: 42.241, longitude: -83.613 },
+        title: 'Test Alert - Device Generated',
+        description: 'This is a test incident created from the mobile device for testing purposes.',
+        severity: 'medium',
+        status: 'active',
+        category: 'Test',
+        source: 'Mobile App Test',
+        location: 'Ypsilanti, MI',
+        updates: [],
+        notificationsSent: 0,
+        affectedAreas: ['Test Area'],
       });
       console.log('WROTE TEST INCIDENT', ref.id);
       Alert.alert('Success', 'Wrote test incident: ' + ref.id);

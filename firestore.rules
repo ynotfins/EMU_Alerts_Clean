@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthed() { return request.auth != null; }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Users can read their own profile; supervisors can read all
+    match /users/{uid} {
+      allow read: if isAuthed() && (request.auth.uid == uid || userRole() == "supervisor");
+      allow write: if isAuthed() && request.auth.uid == uid; // user can update own profile (not role)
+    }
+
+    // Push tokens are user-specific
+    match /users/{uid}/pushTokens/{tokenId} {
+      allow read, write: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // Incidents/alerts readable by authed users
+    match /{colName=(incidents|alerts)}/{docId} {
+      allow read: if isAuthed();
+
+      // Supervisors can write anything; employees can only write employeeInputs for themselves
+      allow update, create: if isAuthed() && (
+        userRole() == "supervisor" || 
+        (userRole() == "employee" && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['employeeInputs']))
+      );
+      allow delete: if isAuthed() && userRole() == "supervisor";
+    }
+
+    // Cases: supervisors can manage, others can read
+    match /cases/{caseId} {
+      allow read: if isAuthed();
+      allow update: if isAuthed() && userRole() == "supervisor"; // status/assign edits
+      allow create: if false; // only Cloud Functions create cases
+      allow delete: if isAuthed() && userRole() == "supervisor";
+    }
+
+    // Case notes: all authenticated users can read and create
+    match /cases/{caseId}/notes/{noteId} {
+      allow read: if isAuthed();
+      allow create: if isAuthed(); // employees & supervisors can add
+      allow update, delete: if false; // immutable after creation
+    }
+
+    // Case tasks: all can read and manage
+    match /cases/{caseId}/tasks/{taskId} {
+      allow read: if isAuthed();
+      allow create: if isAuthed();
+      allow update: if isAuthed(); // allow toggling done, reassign etc.
+      allow delete: if isAuthed() && userRole() == "supervisor";
+    }
+
+    // Case docs: all can read and create
+    match /cases/{caseId}/docs/{docId} {
+      allow read: if isAuthed();
+      allow create: if isAuthed(); // both can upload PDFs
+      allow delete: if isAuthed() && userRole() == "supervisor";
+    }
+
+    // Case timeline: read-only audit log
+    match /cases/{caseId}/timeline/{eventId} {
+      allow read: if isAuthed();
+      allow create: if false; // only server/functions write timeline
+      allow update, delete: if false; // immutable audit log
+    }
+
+    // Responses: employees/supervisors can create their own response logs
+    match /responses/{rid} {
+      allow read: if isAuthed();
+      allow create: if isAuthed() && (userRole() in ["employee","supervisor"]);
+      allow update, delete: if false; // immutable logs
+    }
+
+    // Chat messages: all authenticated users can read, employee/supervisor can create
+    match /chats/{incidentId}/messages/{messageId} {
+      allow read: if isAuthed();
+      allow create: if isAuthed() && (userRole() in ["employee","supervisor"]);
+      allow update, delete: if false; // immutable messages
+    }
+
+    // Presence: users can write their own, supervisors can read all
+    match /users/{uid}/presence/{doc} {
+      allow read: if isAuthed() && (request.auth.uid == uid || userRole() == "supervisor");
+      allow write: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // Library documents: all can read, supervisors can manage
+    match /libraryDocs/{docId} {
+      allow read: if isAuthed();
+      allow write: if isAuthed() && userRole() == "supervisor";
+    }
+  }
+}

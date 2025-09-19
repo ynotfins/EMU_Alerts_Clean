@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications/build/Notifications.types';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
@@ -8,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -106,7 +109,7 @@ export async function scheduleLocalNotification(
         sound: 'default',
         priority: 'high',
       },
-      trigger: delay > 0 ? { seconds: delay } : null,
+      trigger: delay > 0 ? { type: SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: delay } : null,
     });
 
     return notificationId;
@@ -242,5 +245,5 @@ export function addNotificationResponseReceivedListener(
 export function removeNotificationSubscription(
   subscription: Notifications.Subscription
 ) {
-  Notifications.removeNotificationSubscription(subscription);
+  subscription.remove();
 }

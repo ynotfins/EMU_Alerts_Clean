@@ -15,9 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIncidents, Incident } from '../../hooks/useIncidents';
 // DEV ONLY: Test notifications
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications/build/Notifications.types';
 // DEV ONLY: Test Firestore writes
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase.config';
+import { db } from '../../firebase.config';
 
 const SeverityColors = {
   low: '#10b981',
@@ -32,11 +33,67 @@ const StatusColors = {
   resolved: '#10b981',
 } as const;
 
-export default function IncidentsScreen() {
+export default function NFAAlertsList() {
   const { incidents, loading, error, getActiveIncidents } = useIncidents();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'critical'>('all');
   const router = useRouter();
+
+  // Mock NFA Alerts data to match screenshots
+  const mockNFAAlerts = [
+    {
+      id: '1',
+      timestamp: '01/15/2025 02:35 PM',
+      location: 'FL · Miami-Dade · Miami',
+      address: '1425 Brickell Avenue',
+      type: 'Structure Fire',
+      description: 'High-rise residential fire reported on 15th floor. Multiple units responding. Evacuation in progress.',
+      distance: null,
+      severity: 'high' as const,
+    },
+    {
+      id: '2', 
+      timestamp: '01/15/2025 03:15 PM',
+      location: 'FL · Hillsborough · Tampa',
+      address: '2901 W Kennedy Boulevard',
+      type: 'Vehicle Accident',
+      description: 'Multi-vehicle collision at Kennedy & Dale Mabry intersection. Traffic control needed.',
+      distance: '209.2 mi',
+      severity: 'medium' as const,
+    },
+    {
+      id: '3',
+      timestamp: '01/15/2025 04:02 PM', 
+      location: 'FL · Orange · Orlando',
+      address: '8967 International Drive',
+      type: 'Medical Emergency',
+      description: 'Cardiac arrest reported at hotel lobby. AED in use, paramedics requested.',
+      distance: '200.2 mi',
+      severity: 'critical' as const,
+    },
+    {
+      id: '4',
+      timestamp: '01/15/2025 04:30 PM',
+      location: 'FL · Duval · Jacksonville', 
+      address: '1234 Heckscher Drive',
+      type: 'Hazmat Incident',
+      description: 'Chemical spill at industrial facility. Evacuation zone established 500ft radius.',
+      distance: '332.7 mi',
+      severity: 'high' as const,
+    },
+    {
+      id: '5',
+      timestamp: '01/15/2025 05:10 PM',
+      location: 'FL · Broward · Fort Lauderdale',
+      address: '3456 Las Olas Boulevard', 
+      type: 'Water Rescue',
+      description: 'Boat taking on water near Intracoastal Waterway. Two persons aboard.',
+      distance: '25.2 mi',
+      severity: 'medium' as const,
+    },
+  ];
+
+  const displayAlerts = mockNFAAlerts;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -67,7 +124,7 @@ export default function IncidentsScreen() {
           title: 'EMU Alerts Test', 
           body: 'Test local notification - notifications are working! 🚨' 
         },
-        trigger: { seconds: 5 },
+        trigger: { type: SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
       });
       Alert.alert('Test Scheduled', 'You should see a notification in 5 seconds!');
     } catch (error) {
@@ -109,47 +166,40 @@ export default function IncidentsScreen() {
     return `${days}d ago`;
   };
 
-  const renderIncident = ({ item }: { item: Incident }) => (
-    <TouchableOpacity
-      style={[
-        styles.incidentCard,
-        { borderLeftColor: SeverityColors[item.severity] }
-      ]}
-      onPress={() => handleIncidentPress(item)}
-    >
-      <View style={styles.incidentHeader}>
-        <Text style={styles.incidentTitle} numberOfLines={2}>
-          {item.title}
-        </Text>
-        <View style={styles.badges}>
-          <View style={[styles.severityBadge, { backgroundColor: SeverityColors[item.severity] }]}>
-            <Text style={styles.badgeText}>{item.severity.toUpperCase()}</Text>
-          </View>
-          <View style={[styles.statusBadge, { backgroundColor: StatusColors[item.status] }]}>
-            <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
-          </View>
+  const getIncidentTypeColor = (type: string): string => {
+    const typeColors: { [key: string]: string } = {
+      'Structure Fire': '#FF3B30',
+      'Vehicle Accident': '#FF9500',
+      'Medical Emergency': '#FF3B30',
+      'Hazmat Incident': '#007AFF',
+      'Water Rescue': '#007AFF',
+    };
+    return typeColors[type] || '#007AFF';
+  };
+
+  const renderNFAAlert = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.alertCard}>
+      <View style={styles.alertHeader}>
+        <Text style={styles.alertTimestamp}>{item.timestamp}</Text>
+        <View style={styles.heartContainer}>
+          <Ionicons name="heart-outline" size={16} color="#C7C7CC" />
+          <Text style={styles.heartCount}>0</Text>
         </View>
       </View>
-
-      <Text style={styles.incidentDescription} numberOfLines={3}>
-        {item.description}
-      </Text>
-
-      <View style={styles.incidentFooter}>
-        <View style={styles.metaInfo}>
-          <Ionicons name="time" size={14} color="#6b7280" />
-          <Text style={styles.metaText}>{formatTimestamp(item.timestamp)}</Text>
-          {item.location && (
-            <>
-              <Ionicons name="location" size={14} color="#6b7280" style={styles.metaIcon} />
-              <Text style={styles.metaText}>{item.location}</Text>
-            </>
-          )}
-        </View>
-        <Text style={styles.updatesCount}>
-          {item.updates.length} update{item.updates.length !== 1 ? 's' : ''}
+      
+      <Text style={styles.alertLocation}>{item.location}</Text>
+      <Text style={styles.alertAddress}>{item.address}</Text>
+      
+      <View style={styles.alertContent}>
+        <Text style={[styles.alertType, { color: getIncidentTypeColor(item.type) }]}>
+          {item.type}
         </Text>
+        <Text style={styles.alertDescription}>{item.description}</Text>
       </View>
+      
+      {item.distance && (
+        <Text style={styles.alertDistance}>{item.distance}</Text>
+      )}
     </TouchableOpacity>
   );
 
@@ -171,62 +221,29 @@ export default function IncidentsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* DEV ONLY: Test buttons */}
-      <View style={{ paddingHorizontal: 12, paddingBottom: 8, flexDirection: 'row', gap: 8 }}>
-        <Button title="Write Test Incident" onPress={writeTestIncident} />
-      </View>
-      <View style={styles.testContainer}>
-        <Button 
-          title="🔔 Test Notification (5s)" 
-          onPress={testNotification}
-          color="#ef4444"
-        />
-      </View>
-      
-      <View style={styles.filterContainer}>
-        {(['all', 'active', 'critical'] as const).map((filterType) => (
-          <TouchableOpacity
-            key={filterType}
-            style={[
-              styles.filterButton,
-              filter === filterType && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilter(filterType)}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                filter === filterType && styles.filterButtonTextActive,
-              ]}
-            >
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name="search" size={24} color="#007AFF" />
+        <Text style={styles.headerTitle}>NFA Alerts</Text>
+        <TouchableOpacity>
+          <Ionicons name="ellipsis-horizontal" size={24} color="#000000" />
+        </TouchableOpacity>
       </View>
 
-      {loading && incidents.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ef4444" />
-          <Text style={styles.loadingText}>Loading incidents...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={getFilteredIncidents()}
-          renderItem={renderIncident}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#ef4444"
-            />
-          }
-          ListEmptyComponent={renderEmptyState}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      <FlatList
+        data={displayAlerts}
+        renderItem={renderNFAAlert}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#007AFF"
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -234,7 +251,21 @@ export default function IncidentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#007AFF',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+    backgroundColor: '#007AFF',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   // DEV ONLY: Test button styles
   testContainer: {
@@ -271,8 +302,65 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   listContent: {
-    padding: 16,
-    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 0,
+  },
+  alertCard: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E5EA',
+  },
+  alertHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  alertTimestamp: {
+    fontSize: 14,
+    color: '#000000',
+    fontWeight: '500',
+  },
+  heartContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heartCount: {
+    fontSize: 12,
+    color: '#C7C7CC',
+    marginLeft: 4,
+  },
+  alertLocation: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 2,
+  },
+  alertAddress: {
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  alertContent: {
+    marginBottom: 4,
+  },
+  alertType: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  alertDescription: {
+    fontSize: 14,
+    color: '#000000',
+    lineHeight: 18,
+  },
+  alertDistance: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '500',
+    marginTop: 4,
   },
   incidentCard: {
     backgroundColor: '#ffffff',

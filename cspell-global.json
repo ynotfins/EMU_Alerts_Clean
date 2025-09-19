@@ -1,0 +1,50 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "description": "Global cSpell configuration for EMU Alerts project files",
+  "words": [
+    "emualerts",
+    "EMU",
+    "firebase",
+    "Firestore",
+    "GoogleService",
+    "plist",
+    "appspot",
+    "googleapis",
+    "googleusercontent",
+    "ios",
+    "android",
+    "expo",
+    "worklets",
+    "Schedulable",
+    "Turbopack",
+    "FERPA",
+    "prepush",
+    "precommit",
+    "APPINVITE",
+    "SIGNIN",
+    "GCM"
+  ],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/.git/**",
+    "*.min.js",
+    "package-lock.json"
+  ],
+  "overrides": [
+    {
+      "filename": "**/*GoogleService*.plist",
+      "words": [
+        "emualerts",
+        "googleapis",
+        "googleusercontent", 
+        "appspot",
+        "GCM",
+        "APPINVITE",
+        "SIGNIN"
+      ]
+    }
+  ]
+}

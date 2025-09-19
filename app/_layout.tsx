@@ -53,6 +53,7 @@ export default function RootLayout() {
             presentation: 'modal' 
           }} 
         />
+        <Stack.Screen name="chat/[id]" options={{ headerShown: true, title: 'Chat' }} />
       </Stack>
       <ToastHost />
     </>

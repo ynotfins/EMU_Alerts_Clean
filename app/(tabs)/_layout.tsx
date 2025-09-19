@@ -4,7 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: '#ef4444',
         tabBarInactiveTintColor: '#6b7280',
         tabBarStyle: {
@@ -12,50 +14,34 @@ export default function TabLayout() {
           borderTopColor: '#e5e7eb',
           borderTopWidth: 1,
         },
-        headerStyle: {
-          backgroundColor: '#1f2937',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="index" // Incidents list screen at app/(tabs)/index.tsx
         options={{
           title: 'Incidents',
-          headerTitle: 'EMU Alerts',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="alert-circle" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="flame" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="favorites"
+        name="favorites" // app/(tabs)/favorites.tsx (or route you are using)
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="heart" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="chat"
+        name="chat" // app/(tabs)/chat.tsx (list) + app/chat/[id].tsx for rooms
         options={{
           title: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="profile" // app/(tabs)/profile.tsx
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
     </Tabs>

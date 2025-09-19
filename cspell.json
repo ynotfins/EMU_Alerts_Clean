@@ -1,0 +1,91 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "emualerts",
+    "EMU",
+    "firebase",
+    "Firestore",
+    "GoogleService",
+    "plist",
+    "appspot",
+    "googleapis",
+    "googleusercontent",
+    "ios",
+    "android",
+    "expo",
+    "worklets",
+    "Schedulable",
+    "Turbopack",
+    "FERPA",
+    "prepush",
+    "precommit",
+    "APPINVITE",
+    "SIGNIN",
+    "GCM"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    "build/**",
+    "dist/**",
+    ".git/**",
+    "*.min.js",
+    "package-lock.json"
+  ],
+  "overrides": [
+    {
+      "filename": "**/*.plist",
+      "words": [
+        "emualerts",
+        "googleapis",
+        "googleusercontent",
+        "appspot",
+        "GCM",
+        "APPINVITE",
+        "SIGNIN"
+      ]
+    },
+    {
+      "filename": "**/GoogleService-Info.plist",
+      "words": [
+        "emualerts",
+        "googleapis",
+        "googleusercontent",
+        "appspot",
+        "GCM",
+        "APPINVITE",
+        "SIGNIN"
+      ]
+    },
+    {
+      "filename": "**/*.ts",
+      "words": [
+        "Schedulable",
+        "worklets",
+        "Firestore"
+      ]
+    },
+    {
+      "filename": "**/*.js",
+      "words": [
+        "worklets"
+      ]
+    },
+    {
+      "filename": "**/*.json",
+      "words": [
+        "worklets",
+        "prepush",
+        "precommit"
+      ]
+    },
+    {
+      "filename": "**/*.md",
+      "words": [
+        "Firestore",
+        "Turbopack",
+        "FERPA"
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useAuth } from '../hooks/useAuth';
+import ToastHost from './_toast-host';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -53,6 +54,7 @@ export default function RootLayout() {
           }} 
         />
       </Stack>
+      <ToastHost />
     </>
   );
 }

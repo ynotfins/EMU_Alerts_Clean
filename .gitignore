@@ -54,3 +54,8 @@ dist/
 # Testing
 coverage/
 .nyc_output/
+.expo/
+
+
+.expo/
+

@@ -17,7 +17,7 @@ import { useIncidents, Incident } from '../../hooks/useIncidents';
 import * as Notifications from 'expo-notifications';
 // DEV ONLY: Test Firestore writes
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase.config';
+import { db } from '../../firebase.config';
 
 const SeverityColors = {
   low: '#10b981',
@@ -67,7 +67,11 @@ export default function IncidentsScreen() {
           title: 'EMU Alerts Test', 
           body: 'Test local notification - notifications are working! 🚨' 
         },
-        trigger: { seconds: 5 },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 5,
+          repeats: false,
+        },
       });
       Alert.alert('Test Scheduled', 'You should see a notification in 5 seconds!');
     } catch (error) {

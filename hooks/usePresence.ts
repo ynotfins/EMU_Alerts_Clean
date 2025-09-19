@@ -30,7 +30,7 @@ export function usePresence(active:boolean){
     
     // Interval ping only if active (responding)
     if (active) {
-      timer.current = setInterval(tick, 20000); // 20 seconds
+      timer.current = setInterval(tick, 20000) as any; // 20 seconds
     }
     
     return ()=>{ 

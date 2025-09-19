@@ -15,9 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIncidents, Incident } from '../../hooks/useIncidents';
 // DEV ONLY: Test notifications
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications/build/Notifications.types';
 // DEV ONLY: Test Firestore writes
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase.config';
+import { db } from '../../firebase.config';
 
 const SeverityColors = {
   low: '#10b981',
@@ -67,7 +68,7 @@ export default function IncidentsScreen() {
           title: 'EMU Alerts Test', 
           body: 'Test local notification - notifications are working! 🚨' 
         },
-        trigger: { seconds: 5 },
+        trigger: { type: SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
       });
       Alert.alert('Test Scheduled', 'You should see a notification in 5 seconds!');
     } catch (error) {

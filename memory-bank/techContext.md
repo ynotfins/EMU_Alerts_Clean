@@ -1,99 +1,161 @@
-# Technical Context: EMU Alerts Clean
+# Technical Context: EMU Alerts Mobile App
 
-## Technology Stack
-*To be determined based on requirements*
+## Technology Stack - IMPLEMENTED
 
-### Current Status
-- **Repository**: Fresh Git repository initialized
-- **Environment**: Linux development environment
-- **Package Manager**: pnpm preferred (based on user preferences)
-- **Build Tools**: Turbopack preferred for Next.js projects
+### Frontend/Mobile
+- **Framework**: React Native 0.81.4 with Expo SDK 54
+- **Navigation**: Expo Router 6.0.7 (file-based routing)
+- **Language**: TypeScript for type safety
+- **UI Components**: React Native core components + Ionicons
+- **State Management**: React hooks with custom hooks architecture
 
-### Technology Considerations
+### Backend/Services
+- **Database**: Firebase Firestore (NoSQL, real-time)
+- **Authentication**: Firebase Auth with email/password
+- **Push Notifications**: Expo Notifications + Firebase Cloud Messaging
+- **File Storage**: Firebase Storage (configured but not actively used)
+- **Real-time Sync**: Firestore real-time listeners
 
-#### Backend Options
-- **Node.js + Express/Fastify**: Rapid development, good ecosystem
-- **Next.js API Routes**: Full-stack solution with React
-- **Python + FastAPI**: Strong for data processing and APIs
-- **Java Spring Boot**: Enterprise-grade, good for university environments
-
-#### Frontend Options
-- **Next.js + React**: Modern, fast development with Turbopack
-- **React SPA**: Client-side application
-- **Vue.js**: Alternative modern framework
-- **Server-side rendered**: For better SEO and performance
-
-#### Database Options
-- **PostgreSQL**: Reliable relational database for complex queries
-- **MongoDB**: Flexible document storage
-- **SQLite**: Simple setup for development/small scale
-- **MySQL**: Common in university environments
-
-#### Notification Services
-- **SendGrid/Mailgun**: Email delivery
-- **Twilio**: SMS notifications
-- **Firebase Cloud Messaging**: Push notifications
-- **Amazon SNS**: Multi-channel notifications
-
-## Development Setup
-
-### Current Environment
-- **OS**: Linux 6.12.8+
+### Development Environment
+- **OS**: Linux 6.12.8+ development environment
+- **Package Manager**: pnpm (as specified in preferences)
 - **Shell**: /usr/bin/bash
-- **Git**: Repository initialized and clean
-- **Working Directory**: /workspace
+- **Git**: Version control with main branch
+- **IDE**: Cursor with TypeScript support
 
-### Development Tools (Preferences)
-- **Package Manager**: pnpm
-- **Build Tool**: Turbopack (for Next.js)
-- **Testing**: Vitest (run before pushing changes)
-- **Code Quality**: Linting and formatting tools
-- **Agent Mode**: Terminal commands run automatically
+## Architecture Implementation
 
-### Installation Standards
-- Use non-interactive flags (-y)
-- Apply sensible defaults
-- Always run tests before pushing changes
-- Iterate until tests are green
+### Project Structure
+```
+app/
+├── (auth)/
+│   └── login.tsx           # Authentication screen
+├── (tabs)/
+│   ├── _layout.tsx         # Tab navigation
+│   ├── index.tsx          # Incidents feed (main)
+│   ├── favorites.tsx      # Favorites screen
+│   ├── chat.tsx           # Chat screen
+│   └── profile.tsx        # Profile screen
+├── incident/
+│   └── [id].tsx           # Dynamic incident detail
+├── _layout.tsx            # Root layout with auth routing
+└── notifications-setup.ts # Notification configuration
+```
 
-## Technical Constraints
+### Key Dependencies
+#### Core Production Dependencies
+- **expo**: ^54.0.0 - Expo platform
+- **react**: 19.1.0 - React framework
+- **react-native**: 0.81.4 - Native platform
+- **firebase**: ^10.14.1 - Backend services
+- **expo-router**: ~6.0.6 - Navigation
+- **expo-notifications**: ~0.32.11 - Push notifications
+- **react-native-maps**: 1.20.1 - Maps integration
 
-### Requirements (Assumed)
-- **Reliability**: High availability for emergency alerts
-- **Scalability**: Handle varying alert volumes
-- **Security**: Protect user data and prevent spam
-- **Performance**: Fast alert delivery (< 5 minutes urgent)
-- **Maintainability**: Clean, documented codebase
+#### Development Dependencies
+- **typescript**: ^5.9.2 - Type checking
+- **@types/react**: ~19.1.10 - React types
+- **jest**: ^29.7.0 - Testing framework
+- **babel-plugin-module-resolver**: ^5.0.2 - Import resolution
 
-### Integration Constraints
-- May need integration with EMU systems
-- Authentication requirements (LDAP, SSO)
-- Compliance requirements (FERPA, etc.)
-- Network/firewall considerations
+## Firebase Configuration
 
-## Dependencies
-*To be defined as technology stack is chosen*
+### Services Used
+1. **Firestore Database**: Real-time incident storage
+2. **Firebase Auth**: User authentication system
+3. **Cloud Messaging**: Push notification backend
+4. **Firebase Hosting**: Configuration management
 
-### Core Dependencies (Planned)
-- Web framework
-- Database driver/ORM
-- Authentication library
-- Notification service SDKs
-- Testing framework
-- Build and deployment tools
+### Database Schema
+```typescript
+interface Incident {
+  id: string;
+  alertId: string;          // Deduplication key
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  status: 'active' | 'resolved' | 'investigating';
+  timestamp: Date;
+  location?: string;
+  category: string;
+  source: string;
+  updates: IncidentUpdate[];
+  notificationsSent: number;
+  affectedAreas?: string[];
+}
+```
 
-### Development Dependencies
-- Linting tools (ESLint, etc.)
-- Code formatting (Prettier)
-- Type checking (TypeScript if chosen)
-- Testing utilities
-- Development servers
+## Development Setup - COMPLETED
 
-## Deployment Considerations
-- **Environment**: TBD (cloud vs on-premise)
-- **CI/CD**: Automated testing and deployment
-- **Monitoring**: Application and alert delivery monitoring
-- **Backup**: Database and configuration backup
-- **Scaling**: Horizontal scaling for high loads
+### Environment Configuration
+- **Firebase Config**: Environment variables for API keys
+- **Platform Config**: app.config.ts with iOS/Android settings
+- **Notifications**: Android channels configured for emergency alerts
+- **Authentication**: Firebase Auth with persistence
+- **Real-time**: Firestore listeners for live updates
 
-*Last Updated: September 18, 2025*
+### Build Configuration
+- **EAS Project ID**: b40c82be-f4b7-4f9a-8fa1-b0126cb45366
+- **Bundle ID (iOS)**: com.emualerts.ios (from GoogleService-Info.plist)
+- **Package (Android)**: com.emualerts
+- **Permissions**: Location, notifications, wake lock, vibrate
+
+## Performance & Scalability
+
+### Real-time Architecture
+- **Firebase Listeners**: Automatic UI updates on data changes
+- **Incident Deduplication**: By alertId to merge related updates
+- **Optimized Queries**: Firestore compound queries with indexing
+- **Pagination Ready**: Limit queries (currently 50 incidents)
+
+### Notification System
+- **Expo Push Notifications**: Cross-platform push delivery
+- **Emergency Channels**: High-priority Android notification channels
+- **Background Handling**: Configured for foreground/background notifications
+- **Badge Management**: Automatic badge count updates
+
+## Security Implementation
+
+### Authentication
+- **Firebase Auth**: Secure email/password authentication
+- **Session Persistence**: AsyncStorage integration for mobile
+- **Auto-routing**: Redirect based on auth state
+- **Error Handling**: Comprehensive auth error management
+
+### Data Security
+- **Firestore Rules**: Basic security (needs production hardening)
+- **Environment Variables**: Secure API key management
+- **HTTPS**: All Firebase communication over HTTPS
+- **Input Validation**: Client-side validation with server-side backup
+
+## Testing & Quality
+
+### Built-in Testing
+- **Jest Configuration**: Unit testing framework setup
+- **Test Utilities**: Built-in test buttons for notifications/Firestore
+- **Manual Testing**: Comprehensive incident flow testing
+- **Real-time Testing**: Live Firebase connection testing
+
+### Code Quality
+- **TypeScript**: Full type safety across the application
+- **ESLint**: Code linting configuration
+- **Modular Architecture**: Separation of concerns with custom hooks
+- **Error Boundaries**: Comprehensive error handling
+
+## Deployment Status
+
+### Current State
+✅ **Development Ready**: Full local development environment
+✅ **Firebase Connected**: Production Firebase project configured
+✅ **Cross-platform**: iOS and Android builds supported
+✅ **EAS Integration**: Ready for Expo Application Services deployment
+✅ **Testing Tools**: Built-in testing and debugging tools
+
+### Production Readiness
+- **Environment**: Configured for development and production
+- **Monitoring**: Firebase console integration
+- **Updates**: Over-the-air updates via Expo
+- **Certificates**: Google Services configuration files included
+- **Performance**: Real-time optimizations implemented
+
+*Last Updated: September 19, 2025*

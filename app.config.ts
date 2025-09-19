@@ -11,7 +11,7 @@ function readIOSBundleIdFromPlist() {
   }
 }
 
-export default ({ config }) => ({
+export default ({ config }: { config: any }) => ({
   expo: {
     name: process.env.EXPO_PUBLIC_APP_NAME ?? "EMU Alerts",
     slug: process.env.EXPO_PUBLIC_APP_SLUG ?? "emualerts",

@@ -1,0 +1,33 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "Washtenaw",
+    "Ypsilanti",
+    "EMU",
+    "Firestore",
+    "firestore",
+    "expo",
+    "Expo",
+    "firebase",
+    "Firebase",
+    "cproject",
+    "gitsmart",
+    "pnpm",
+    "tsx",
+    "jsx",
+    "ios",
+    "iOS",
+    "Ionicons",
+    "async",
+    "async-storage",
+    "reanimated",
+    "turbopack"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".expo",
+    "dist",
+    "build"
+  ]
+}

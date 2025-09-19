@@ -2,6 +2,73 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, where, limit } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
+// Check if we're in demo mode
+const isDemoMode = !process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
+
+// Import demo data if needed
+const mockIncidents = isDemoMode ? [
+  {
+    id: '1',
+    alertId: 'ALERT-2024-001',
+    title: 'Campus Safety Inspection',
+    description: 'Routine safety inspection in progress at Student Center. Building remains open. No cause for concern.',
+    severity: 'low' as const,
+    status: 'active' as const,
+    timestamp: new Date(),
+    location: 'Student Center, EMU Campus',
+    category: 'Safety Inspection',
+    source: 'Campus Security',
+    updates: [],
+    notificationsSent: 150,
+    affectedAreas: ['Student Center'],
+  },
+  {
+    id: '2',
+    alertId: 'ALERT-2024-002',
+    title: 'Severe Weather Advisory',
+    description: 'Severe thunderstorm warning in effect until 8:00 PM. Seek shelter if thunder is heard within 30 seconds of lightning.',
+    severity: 'medium' as const,
+    status: 'active' as const,
+    timestamp: new Date(Date.now() - 3600000),
+    location: 'Campus Wide',
+    category: 'Weather',
+    source: 'Emergency Management',
+    updates: [],
+    notificationsSent: 2500,
+    affectedAreas: ['All Campus Buildings', 'Parking Areas', 'Athletic Fields'],
+  },
+  {
+    id: '3',
+    alertId: 'ALERT-2024-003',
+    title: 'Maintenance Complete - Library HVAC',
+    description: 'Scheduled HVAC maintenance in the Halle Library has been completed successfully. All systems are operational.',
+    severity: 'low' as const,
+    status: 'resolved' as const,
+    timestamp: new Date(Date.now() - 7200000),
+    location: 'Halle Library',
+    category: 'Maintenance',
+    source: 'Facilities Management',
+    updates: [],
+    notificationsSent: 800,
+    affectedAreas: ['Halle Library'],
+  },
+  {
+    id: '4',
+    alertId: 'ALERT-2024-004',
+    title: 'CRITICAL: Fire Alarm Test - Pray-Harrold',
+    description: 'Fire alarm system test in Pray-Harrold Building. This is a scheduled test. Do not evacuate unless directed by emergency personnel.',
+    severity: 'critical' as const,
+    status: 'investigating' as const,
+    timestamp: new Date(Date.now() - 1800000),
+    location: 'Pray-Harrold Building',
+    category: 'Fire Safety',
+    source: 'Fire Safety Office',
+    updates: [],
+    notificationsSent: 1200,
+    affectedAreas: ['Pray-Harrold Building', 'Adjacent Walkways'],
+  }
+] : [];
+
 export interface Incident {
   id: string;
   alertId: string;
@@ -40,6 +107,20 @@ export const useIncidents = (maxResults: number = 50) => {
   });
 
   useEffect(() => {
+    if (isDemoMode) {
+      // Demo mode - use mock data
+      console.log('📊 Incidents running in DEMO MODE');
+      setTimeout(() => {
+        setState({
+          incidents: mockIncidents.slice(0, maxResults),
+          loading: false,
+          error: null,
+        });
+      }, 1000);
+      return () => {}; // No cleanup needed for demo
+    }
+
+    // Production mode - use Firestore
     const incidentsQuery = query(
       collection(db, 'incidents'),
       orderBy('timestamp', 'desc'),
